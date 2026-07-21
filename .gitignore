@@ -1,0 +1,11 @@
+node_modules/
+.vite/
+.env
+*.log
+.DS_Store
+Thumbs.db
+deploy.ps1
+assets/css/tailwind-input.css
+tailwind.config.js
+package.json
+package-lock.json
