@@ -191,14 +191,6 @@ function getUnreadNotifications($pdo) {
     return $stmt->fetchColumn();
 }
 
-function generateBarcode($pdo, $format = 'CODE128') {
-    $prefix = 'SI';
-    $stmt = $pdo->query("SELECT COUNT(*) FROM inventory_items");
-    $count = $stmt->fetchColumn() + 1;
-    $barcode = $prefix . date('Ymd') . str_pad($count, 6, '0', STR_PAD_LEFT);
-    return $barcode;
-}
-
 function paginate($page, $totalRecords, $perPage = 20) {
     $totalPages = ceil($totalRecords / $perPage);
     $offset = ($page - 1) * $perPage;
@@ -224,6 +216,7 @@ function getPageTitle($page) {
         'batches' => 'Batch / Lot Management',
         'suppliers' => 'Suppliers',
         'reports' => 'Reports',
+        'periodic-reports' => 'Periodic Inventory Report',
         'users' => 'Users',
         'settings' => 'Settings',
         'audit-logs' => 'Audit Logs',

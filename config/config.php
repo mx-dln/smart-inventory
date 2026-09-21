@@ -15,8 +15,6 @@ define('BASE_URL', $protocol . '://' . $host . $scriptDir . '/');
 define('APP_NAME', 'Smart Inventory System');
 define('SCHOOL_NAME', 'ISU Cauayan Food Innovation Center');
 define('UPLOAD_PATH', __DIR__ . '/../uploads/');
-define('BARCODE_PATH', __DIR__ . '/../uploads/barcodes/');
-define('QRCODE_PATH', __DIR__ . '/../uploads/qrcodes/');
 
 // Session timeout (30 minutes)
 define('SESSION_TIMEOUT', 1800);

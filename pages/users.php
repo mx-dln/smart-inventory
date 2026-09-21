@@ -127,9 +127,14 @@ $error = $_GET['error'] ?? '';
 <!-- Page Header -->
 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
     <h3 class="text-lg font-semibold text-gray-900">User Management</h3>
-    <button onclick="openAddModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-        <i class="fas fa-plus mr-1"></i> Add User
-    </button>
+    <div class="flex items-center gap-2">
+        <button onclick="printPage('usersTable', 'Users Report')" class="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+            <i class="fas fa-print mr-1"></i> Print
+        </button>
+        <button onclick="openAddModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+            <i class="fas fa-plus mr-1"></i> Add User
+        </button>
+    </div>
 </div>
 
 <!-- Users Table -->

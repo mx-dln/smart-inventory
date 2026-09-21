@@ -20,6 +20,7 @@ $allowedPages = [
     'suppliers' => ['Administrator', 'Inventory Manager'],
     'supplier-analytics' => ['Administrator', 'Inventory Manager'],
     'reports' => ['Administrator', 'Inventory Manager', 'Production Staff', 'Faculty'],
+    'periodic-reports' => ['Administrator', 'Inventory Manager', 'Production Staff', 'Faculty'],
     'users' => ['Administrator'],
     'settings' => ['Administrator'],
     'audit-logs' => ['Administrator'],
@@ -95,3 +96,42 @@ require_once __DIR__ . '/includes/header.php';
 </div>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
+
+<?php if (!empty($_SESSION['show_splash'])): ?>
+<!-- Welcome Splash Screen (shown once after login) -->
+<style>
+@keyframes splashBounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+#splashScreen{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#059669 0%,#0f172a 100%);transition:opacity .6s ease}
+#splashScreen .dot{width:10px;height:10px;background:#fff;border-radius:9999px;animation:splashBounce .8s ease infinite}
+#splashScreen .logo{height:96px;width:auto;margin:0 auto 24px}
+#splashScreen h1{font-size:1.5rem;font-weight:700;color:#fff;margin-bottom:8px}
+#splashScreen .sub{color:#a7f3d0;font-size:.875rem;margin-bottom:24px}
+#splashScreen .welcome{color:#fff;font-size:1.125rem;font-weight:500;margin-top:24px}
+#splashScreen .loading{color:#a7f3d0;font-size:.75rem;margin-top:4px}
+</style>
+<div id="splashScreen">
+    <div style="text-align:center;padding:0 24px">
+        <img src="<?php echo BASE_URL; ?>assets/images/isu_logo.png" alt="ISU Logo" class="logo">
+        <h1><?php echo APP_NAME; ?></h1>
+        <p class="sub"><?php echo SCHOOL_NAME; ?></p>
+        <div style="display:flex;justify-content:center;gap:8px">
+            <span class="dot" style="animation-delay:0ms"></span>
+            <span class="dot" style="animation-delay:150ms"></span>
+            <span class="dot" style="animation-delay:300ms"></span>
+        </div>
+        <p class="welcome">Welcome, <?php echo h($_SESSION['splash_user'] ?? $_SESSION['username']); ?>!</p>
+        <p class="loading">Loading your dashboard...</p>
+    </div>
+</div>
+<script>
+$(document).ready(function() {
+    setTimeout(function() {
+        $('#splashScreen').fadeOut(600, function() { $(this).remove(); });
+    }, 2500);
+});
+</script>
+<?php
+// Clear splash flag so it only shows once per login
+unset($_SESSION['show_splash'], $_SESSION['splash_user']);
+endif;
+?>

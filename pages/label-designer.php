@@ -1,6 +1,6 @@
 <?php
 $page = 'label-designer';
-$items = $pdo->query("SELECT id, name, item_code, barcode FROM inventory_items WHERE status='Active' ORDER BY name")->fetchAll();
+$items = $pdo->query("SELECT id, name, item_code FROM inventory_items WHERE status='Active' ORDER BY name")->fetchAll();
 $success = $_GET['success'] ?? '';
 $error = $_GET['error'] ?? '';
 ?>
@@ -95,8 +95,6 @@ $error = $_GET['error'] ?? '';
                 <?php
                 $fields = [
                     'logo' => 'Logo',
-                    'barcode' => 'Barcode',
-                    'qrcode' => 'QR Code',
                     'item_name' => 'Item Name',
                     'batch' => 'Batch Number',
                     'unit' => 'Unit',
@@ -106,7 +104,7 @@ $error = $_GET['error'] ?? '';
                     'location' => 'Location',
                     'print_date' => 'Print Date',
                 ];
-                $defaults = ['barcode', 'item_name', 'unit', 'price', 'batch'];
+                $defaults = ['item_name', 'unit', 'price', 'batch'];
                 ?>
                 <?php foreach ($fields as $key => $label): ?>
                 <label class="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors border border-gray-100">
@@ -161,9 +159,6 @@ $error = $_GET['error'] ?? '';
         </div>
     </div>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3/dist/JsBarcode.all.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <script>
 var currentSize = '70x35mm';
@@ -257,25 +252,10 @@ function renderPreview(item) {
     if (fields.includes('print_date')) {
         html += '<div class="text-xs text-gray-400">Printed: ' + new Date().toLocaleDateString() + '</div>';
     }
-    if (fields.includes('barcode')) {
-        html += '<div class="mt-1 flex justify-center"><svg id="previewBarcode"></svg></div>';
-        html += '<div class="text-xs font-mono text-gray-500 mt-0.5">' + (item.barcode || '') + '</div>';
-    }
-    if (fields.includes('qrcode')) {
-        html += '<div class="mt-1 flex justify-center"><div id="previewQrcode"></div></div>';
-    }
     html += '</div>';
 
     var container = document.getElementById('labelPreview');
     container.innerHTML = html;
-
-    if (fields.includes('barcode') && item.barcode) {
-        JsBarcode('#previewBarcode', item.barcode, { format: 'CODE128', width: 1, height: 30, displayValue: false, margin: 0 });
-    }
-    if (fields.includes('qrcode') && item.barcode) {
-        document.getElementById('previewQrcode').innerHTML = '';
-        new QRCode(document.getElementById('previewQrcode'), { text: item.barcode, width: 60, height: 60 });
-    }
 }
 
 function openPrintPreview() {
@@ -312,23 +292,35 @@ function doBulkPrint() {
     var cols = document.getElementById('bulkColumns').value;
     var fields = getSelectedFields().join(',');
 
-    $.ajax({
-        url: 'ajax/print_barcode_bulk.php?ids=' + ids.join(',') + '&copies=' + copies + '&cols=' + cols + '&fields=' + fields + '&w=' + currentW + '&h=' + currentH,
-        method: 'GET',
-        success: function(html) {
-            var w = window.open('', '_blank');
-            w.document.write(html);
-            w.document.close();
-            document.getElementById('bulkPrintModal').classList.add('hidden');
-        },
-        error: function() {
-            showToast('Failed to generate bulk print', 'error');
-        }
+    var items = [];
+    var loaded = 0;
+    ids.forEach(function(id) {
+        $.ajax({
+            url: 'ajax/get_item.php?id=' + id,
+            dataType: 'json',
+            success: function(item) {
+                if (item) items.push(item);
+                loaded++;
+                if (loaded === ids.length) finishBulkPrint();
+            },
+            error: function() {
+                loaded++;
+                if (loaded === ids.length) finishBulkPrint();
+            }
+        });
     });
+
+    function finishBulkPrint() {
+        if (items.length === 0) { showToast('Failed to generate bulk print', 'error'); return; }
+        var w = window.open('', '_blank');
+        w.document.write(buildPrintHtml(items, copies, cols, fields));
+        w.document.close();
+        document.getElementById('bulkPrintModal').classList.add('hidden');
+    }
 }
 
 function buildPrintHtml(items, copies, cols, fieldsStr) {
-    var fields = fieldsStr ? fieldsStr.split(',') : ['barcode', 'item_name'];
+    var fields = fieldsStr ? fieldsStr.split(',') : ['item_name'];
     var w = currentW;
     var h = currentH;
     var scaleW = Math.min(100, Math.max(40, w));
@@ -337,8 +329,6 @@ function buildPrintHtml(items, copies, cols, fieldsStr) {
     var titleSize = scaleW > 70 ? '9pt' : '7pt';
 
     var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Label Print</title>';
-    html += '<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3/dist/JsBarcode.all.min.js"><\/script>';
-    html += '<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>';
     html += '<style>';
     html += '*{margin:0;padding:0;box-sizing:border-box}';
     html += 'body{font-family:Arial,sans-serif;background:#fff}';
@@ -347,7 +337,6 @@ function buildPrintHtml(items, copies, cols, fieldsStr) {
     html += '.label{text-align:center;padding:2mm 1mm;border:1px dashed #ccc;border-radius:1mm;page-break-inside:avoid;overflow:hidden}';
     html += '.label .field-name{font-size:' + titleSize + ';font-weight:bold;color:#333;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}';
     html += '.label .field-sm{font-size:' + fontSize + ';color:#666;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}';
-    html += '.label .field-mono{font-family:monospace;font-size:6pt;color:#555}';
     html += '.label .logo-placeholder{font-size:7pt;font-weight:bold;color:#999;margin-bottom:1mm}';
     html += '.no-print{display:block;text-align:center;margin:10px 0}';
     html += '.no-print button{padding:10px 30px;background:#059669;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px;margin:0 4px}';
@@ -387,22 +376,11 @@ function buildPrintHtml(items, copies, cols, fieldsStr) {
             if (fields.indexOf('print_date') !== -1) {
                 html += '<div class="field-sm">' + new Date().toLocaleDateString() + '</div>';
             }
-            if (fields.indexOf('barcode') !== -1) {
-                html += '<div><svg class="bar-svg" data-bc="' + (item.barcode||'') + '"></svg></div>';
-                html += '<div class="field-mono">' + (item.barcode||'') + '</div>';
-            }
-            if (fields.indexOf('qrcode') !== -1) {
-                html += '<div><div class="qr-div" data-qr="' + (item.barcode||'') + '" style="display:inline-block"></div></div>';
-            }
             html += '</div>';
         }
     }
 
     html += '</div></div>';
-    html += '<script>';
-    html += 'document.querySelectorAll(".bar-svg").forEach(function(s){JsBarcode(s,s.getAttribute("data-bc"),{format:"CODE128",width:Math.max(0.5,' + (scaleW/100) + '),height:Math.max(10,' + (scaleH*0.4) + '),displayValue:false,margin:0})});';
-    html += 'document.querySelectorAll(".qr-div").forEach(function(d){new QRCode(d,{text:d.getAttribute("data-qr"),width:Math.min(80,' + (scaleH*1.2) + '),height:Math.min(80,' + (scaleH*1.2) + ')})});';
-    html += '<\/script>';
     html += '</body></html>';
     return html;
 }

@@ -182,14 +182,19 @@ $error = $_GET['error'] ?? '';
         </select>
         <input type="text" id="filterSearch" placeholder="Search item or reference..." value="<?php echo h($searchFilter); ?>" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-emerald-500 focus:border-emerald-500" onkeyup="applyFilters()">
     </div>
-    <button onclick="openModal('add')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-        <i class="fas fa-plus mr-1"></i> Stock In
-    </button>
+    <div class="flex items-center gap-2">
+        <button onclick="printPage('stockInTable', 'Stock In Report')" class="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+            <i class="fas fa-print mr-1"></i> Print
+        </button>
+        <button onclick="openModal('add')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+            <i class="fas fa-plus mr-1"></i> Stock In
+        </button>
+    </div>
 </div>
 
 <div class="table-container">
     <div class="overflow-x-auto">
-        <table class="datatable min-w-full">
+        <table class="datatable min-w-full" id="stockInTable">
             <thead>
                 <tr class="bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     <th class="px-4 py-3">Date</th>

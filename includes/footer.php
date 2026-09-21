@@ -30,6 +30,8 @@
 
 <script>
 var csrfToken = '<?php echo $_SESSION['csrf_token']; ?>';
+var currentUserName = '<?php echo h($_SESSION['full_name'] ?? $_SESSION['username']); ?>';
+var BASE_URL_JS = '<?php echo BASE_URL; ?>';
 var confirmCallback = null;
 function showConfirm(message, fn) {
     document.getElementById('confirmMessage').textContent = message || 'This action cannot be undone.';
@@ -66,7 +68,7 @@ function closeConfirm() { document.getElementById('confirmDialog').classList.add
                 <!-- Overview -->
                 <div>
                     <h3 class="text-base font-bold text-gray-900 flex items-center"><i class="fas fa-info-circle text-emerald-500 mr-2"></i> System Overview</h3>
-                    <p class="text-sm text-gray-600 mt-2 leading-relaxed">The Smart Inventory System is a comprehensive, enterprise-grade inventory management platform designed for the ISU Cauayan Food Innovation Center. It manages raw materials, production supplies, packaging, chemicals, equipment, and office supplies. Features include barcode/QR generation, batch tracking, FIFO, forecasting, purchase requisitions, borrow/return tracking, role-based access, and advanced analytics — all without any PHP framework.</p>
+                    <p class="text-sm text-gray-600 mt-2 leading-relaxed">The Smart Inventory System is a comprehensive, enterprise-grade inventory management platform designed for the ISU Cauayan Food Innovation Center. It manages raw materials, production supplies, packaging, chemicals, equipment, and office supplies. Features include batch tracking, FIFO, forecasting, purchase requisitions, borrow/return tracking, role-based access, and advanced analytics — all without any PHP framework.</p>
                 </div>
 
                 <!-- Getting Started -->
@@ -133,23 +135,20 @@ function closeConfirm() { document.getElementById('confirmDialog').classList.add
                 <div>
                     <h3 class="text-base font-bold text-gray-900 flex items-center"><i class="fas fa-boxes text-emerald-500 mr-2"></i> Inventory Module</h3>
                     <div class="mt-2 space-y-3 text-sm text-gray-600">
-                        <div><p class="font-medium text-gray-800">All Items</p><p>Searchable, filterable table of all inventory items with item code, barcode, name, category, stock levels, cost, expiration, and status. <strong>Add Item</strong> creates new items with auto-generated barcode/QR. Click <strong>View</strong> for full details with transaction history. Use <strong>Edit</strong> to modify. Barcode and QR print settings allow choosing copies and columns per A4 page.</p></div>
+                        <div><p class="font-medium text-gray-800">All Items</p><p>Searchable, filterable table of all inventory items with item code, name, category, stock levels, cost, expiration, and status. <strong>Add Item</strong> creates new items with auto-generated item codes. Click <strong>View</strong> for full details with transaction history. Use <strong>Edit</strong> to modify.</p></div>
                         <div><p class="font-medium text-gray-800">Stock In</p><p>Record incoming inventory (Purchase, Donation, Adjustment, Return). Automatically updates item stock and creates transaction records. Supports batch numbers, expiration dates, and reference numbers.</p></div>
                         <div><p class="font-medium text-gray-800">Stock Out</p><p>Record outgoing inventory (Production Request, Damaged, Expired, Transfer, Consumption). Validates available stock — cannot exceed current quantity. Stock is deducted automatically.</p></div>
-                        <div><p class="font-medium text-gray-800">Batches / Lots</p><p>Manage item batches with lot numbers, suppliers, manufacturing/expiration dates, and quantities. FIFO (First In, First Out) is used for automatic inventory deductions. Expired batches are prevented from being used. Batch-specific barcode and QR printing supported.</p></div>
-                        <div><p class="font-medium text-gray-800">Borrow &amp; Return</p><p>Track equipment and tool borrowing. Record borrower, department, dates, and condition. Barcode scanning on borrow/return. Automatic overdue detection with penalty tracking. Items are deducted from inventory on borrow and restored on return.</p></div>
+                        <div><p class="font-medium text-gray-800">Batches / Lots</p><p>Manage item batches with lot numbers, suppliers, manufacturing/expiration dates, and quantities. FIFO (First In, First Out) is used for automatic inventory deductions. Expired batches are prevented from being used.</p></div>
+                        <div><p class="font-medium text-gray-800">Borrow &amp; Return</p><p>Track equipment and tool borrowing. Record borrower, department, dates, and condition. Automatic overdue detection with penalty tracking. Items are deducted from inventory on borrow and restored on return.</p></div>
                         <div><p class="font-medium text-gray-800">Categories &amp; Units</p><p>Manage item categories (Raw Materials, Production Supplies, Packaging, etc.) and measurement units (kg, L, pcs, box, etc.).</p></div>
                     </div>
                 </div>
 
-                <!-- Barcode / QR / Label Designer -->
+                <!-- Label Designer -->
                 <div>
-                    <h3 class="text-base font-bold text-gray-900 flex items-center"><i class="fas fa-barcode text-emerald-500 mr-2"></i> Barcode, QR Code &amp; Label Designer</h3>
+                    <h3 class="text-base font-bold text-gray-900 flex items-center"><i class="fas fa-tag text-emerald-500 mr-2"></i> Label Designer</h3>
                     <div class="mt-2 space-y-2 text-sm text-gray-600">
-                        <p><strong>Generating:</strong> Barcodes (Code128) and QR codes are auto-generated for each item. Barcodes are also generated per batch.</p>
-                        <p><strong>Printing:</strong> Click Barcode or QR button on any item or batch. Choose copies, columns per row — layout is optimized for A4 paper.</p>
-                        <p><strong>Label Designer:</strong> Create custom label templates with selectable sizes (40×20mm to 100×50mm). Toggle fields: Logo, Barcode, QR, Item Name, Batch Number, Unit, Price, Supplier, Expiration, Location, Print Date. Preview and bulk print.</p>
-                        <p><strong>Scanner Support:</strong> USB barcode scanners work as keyboard input. Scan from any page to search. Mobile camera scanner also supported.</p>
+                        <p><strong>Label Designer:</strong> Create custom label templates with selectable sizes (40×20mm to 100×50mm). Toggle fields: Logo, Item Name, Batch Number, Unit, Price, Supplier, Expiration, Location, Print Date. Preview and bulk print.</p>
                     </div>
                 </div>
 
@@ -272,8 +271,6 @@ $(document).on('keydown', function(e) { if (e.key === 'Escape') { $('#helpModal'
                 }
                 
                 $table.DataTable({
-                    scrollX: true,
-                    scrollCollapse: true,
                     pageLength: 25,
                     lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
                     dom: '<"dt-toolbar"lf>t<"dt-footer"ip>',

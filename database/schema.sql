@@ -81,8 +81,6 @@ CREATE TABLE IF NOT EXISTS suppliers (
 CREATE TABLE IF NOT EXISTS inventory_items (
     id              INT AUTO_INCREMENT PRIMARY KEY,
     item_code       VARCHAR(50) NOT NULL UNIQUE,
-    barcode         VARCHAR(100),
-    qr_code         VARCHAR(255),
     name            VARCHAR(200) NOT NULL,
     description     TEXT,
     category_id     INT NOT NULL,
@@ -261,7 +259,6 @@ CREATE TABLE IF NOT EXISTS activity_logs (
 -- INDEXES
 -- ============================================================
 CREATE INDEX idx_items_item_code    ON inventory_items(item_code);
-CREATE INDEX idx_items_barcode      ON inventory_items(barcode);
 CREATE INDEX idx_prod_req_number    ON production_requests(request_number);
 CREATE INDEX idx_stock_in_date      ON stock_in(date_received);
 CREATE INDEX idx_stock_out_date     ON stock_out(date_released);

@@ -138,12 +138,16 @@ $role = $_SESSION['role'] ?? '';
             </div>
 
             <div class="sidebar-group">
-                <div class="sidebar-group-title <?php echo $page == 'reports' ? 'active' : ''; ?>">
+                <div class="sidebar-group-title <?php echo in_array($page, ['reports', 'periodic-reports']) ? 'active' : ''; ?>">
                     <i class="fas fa-file-alt w-5"></i>
                     <span>Reports</span>
                     <i class="fas fa-chevron-down ml-auto text-xs transition-transform"></i>
                 </div>
-                <div class="sidebar-submenu <?php echo $page == 'reports' ? 'open' : ''; ?>">
+                <div class="sidebar-submenu <?php echo in_array($page, ['reports', 'periodic-reports']) ? 'open' : ''; ?>">
+                    <a href="index?page=periodic-reports" class="sidebar-sub-link <?php echo $page == 'periodic-reports' ? 'active' : ''; ?>">
+                        <i class="fas fa-file-invoice w-4"></i>
+                        <span>Weekly / Monthly Inventory</span>
+                    </a>
                     <a href="index?page=reports&type=inventory" class="sidebar-sub-link">
                         <i class="fas fa-boxes w-4"></i>
                         <span>Inventory Report</span>

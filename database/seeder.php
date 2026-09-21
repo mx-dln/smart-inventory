@@ -83,33 +83,33 @@ try {
     echo "\nInserting inventory items...\n";
     $items = [
         // Raw Materials (category 1, units: kg=1, L=3)
-        ['ITM010001','SI-BC-0001','Premium Rice - Dinorado','High quality Dinorado rice from Cauayan farms',1,1,1200,100,2500,55.00,1,'2026-08-15','Dry Goods Storage - Rack A1'],
-        ['ITM010002','SI-BC-0002','Glutinous Rice','Malagkit rice for native delicacies',1,1,800,50,1500,65.00,1,'2026-07-20','Dry Goods Storage - Rack A2'],
-        ['ITM010003','SI-BC-0003','Corn Grits','Coarse ground corn for snack food production',1,1,450,60,1000,38.00,1,'2026-09-01','Dry Goods Storage - Rack B1'],
-        ['ITM010004','SI-BC-0004','Wheat Flour - All Purpose','Premium APF for baking and pastries',1,1,600,80,1200,42.50,2,'2026-06-30','Dry Goods Storage - Rack B2'],
-        ['ITM010005','SI-BC-0005','Coconut Milk - Pure','Pure extracted coconut milk, no additives',1,3,200,30,500,95.00,2,'2026-05-15','Cold Storage - Section 1'],
-        ['ITM010006','SI-BC-0006','Brown Sugar','Local muscovado sugar from Isabela',1,1,350,50,800,58.00,2,'2026-10-01','Dry Goods Storage - Rack C1'],
-        ['ITM010007','SI-BC-0007','Cooking Oil - Palm','Refined palm oil for deep frying',1,3,400,40,700,85.00,2,'2026-04-30','Dry Goods Storage - Rack C2'],
+        ['ITM010001','Premium Rice - Dinorado','High quality Dinorado rice from Cauayan farms',1,1,1200,100,2500,55.00,1,'2026-08-15','Dry Goods Storage - Rack A1'],
+        ['ITM010002','Glutinous Rice','Malagkit rice for native delicacies',1,1,800,50,1500,65.00,1,'2026-07-20','Dry Goods Storage - Rack A2'],
+        ['ITM010003','Corn Grits','Coarse ground corn for snack food production',1,1,450,60,1000,38.00,1,'2026-09-01','Dry Goods Storage - Rack B1'],
+        ['ITM010004','Wheat Flour - All Purpose','Premium APF for baking and pastries',1,1,600,80,1200,42.50,2,'2026-06-30','Dry Goods Storage - Rack B2'],
+        ['ITM010005','Coconut Milk - Pure','Pure extracted coconut milk, no additives',1,3,200,30,500,95.00,2,'2026-05-15','Cold Storage - Section 1'],
+        ['ITM010006','Brown Sugar','Local muscovado sugar from Isabela',1,1,350,50,800,58.00,2,'2026-10-01','Dry Goods Storage - Rack C1'],
+        ['ITM010007','Cooking Oil - Palm','Refined palm oil for deep frying',1,3,400,40,700,85.00,2,'2026-04-30','Dry Goods Storage - Rack C2'],
         // Packaging (category 3, units: pcs=5, box=6, roll=10)
-        ['ITM030001','SI-BC-0008','Plastic Tub 250ml','Round PP plastic tub with lid',3,5,5000,500,10000,8.50,3,'2027-01-01','Packaging Storage - Shelf 1'],
-        ['ITM030002','SI-BC-0009','Plastic Tub 500ml','Square PP plastic tub with lid',3,5,3500,400,8000,12.00,3,'2027-01-01','Packaging Storage - Shelf 2'],
-        ['ITM030003','SI-BC-0010','Stand-Up Pouch 100g','Aluminum foil stand-up pouch with resealable zipper',3,6,20000,2000,50000,3.50,3,'2026-12-01','Packaging Storage - Shelf 3'],
-        ['ITM030004','SI-BC-0011','Label Sticker - Waterproof 2x2','Glossy waterproof adhesive label',3,10,15000,1000,30000,1.25,3,'2027-03-01','Packaging Storage - Shelf 4'],
-        ['ITM030005','SI-BC-0012','Shrink Wrap Roll 18in','PVC shrink wrap for bundling',3,10,25,5,60,350.00,3,'2026-11-01','Packaging Storage - Shelf 5'],
+        ['ITM030001','Plastic Tub 250ml','Round PP plastic tub with lid',3,5,5000,500,10000,8.50,3,'2027-01-01','Packaging Storage - Shelf 1'],
+        ['ITM030002','Plastic Tub 500ml','Square PP plastic tub with lid',3,5,3500,400,8000,12.00,3,'2027-01-01','Packaging Storage - Shelf 2'],
+        ['ITM030003','Stand-Up Pouch 100g','Aluminum foil stand-up pouch with resealable zipper',3,6,20000,2000,50000,3.50,3,'2026-12-01','Packaging Storage - Shelf 3'],
+        ['ITM030004','Label Sticker - Waterproof 2x2','Glossy waterproof adhesive label',3,10,15000,1000,30000,1.25,3,'2027-03-01','Packaging Storage - Shelf 4'],
+        ['ITM030005','Shrink Wrap Roll 18in','PVC shrink wrap for bundling',3,10,25,5,60,350.00,3,'2026-11-01','Packaging Storage - Shelf 5'],
         // Chemicals (category 4, units: L=3, kg=1, bottle=11)
-        ['ITM040001','SI-BC-0013','Food Grade Sanitizer - Chlorine Base','Approved food contact surface sanitizer',4,3,80,15,200,275.00,4,'2025-12-31','Chemical Cabinet - Left'],
-        ['ITM040002','SI-BC-0014','Citric Acid - Food Grade','Acidity regulator for food processing',4,1,50,10,150,160.00,4,'2026-06-30','Chemical Cabinet - Right'],
-        ['ITM040003','SI-BC-0015','Sodium Metabisulfite','Preservative for dried fruits and vegetables',4,1,30,5,80,420.00,4,'2025-11-30','Chemical Cabinet - Right'],
+        ['ITM040001','Food Grade Sanitizer - Chlorine Base','Approved food contact surface sanitizer',4,3,80,15,200,275.00,4,'2025-12-31','Chemical Cabinet - Left'],
+        ['ITM040002','Citric Acid - Food Grade','Acidity regulator for food processing',4,1,50,10,150,160.00,4,'2026-06-30','Chemical Cabinet - Right'],
+        ['ITM040003','Sodium Metabisulfite','Preservative for dried fruits and vegetables',4,1,30,5,80,420.00,4,'2025-11-30','Chemical Cabinet - Right'],
         // Equipment (category 7, units: pcs=5)
-        ['ITM070001','SI-BC-0016','Digital Food Scale 5kg','Stainless steel platform, LCD display',7,5,8,2,15,2500.00,5,'2028-01-01','Equipment Room - Shelf A'],
-        ['ITM070002','SI-BC-0017','Stainless Mixing Bowl 20L','Heavy gauge 304 stainless steel',7,5,15,3,30,850.00,5,'2027-06-01','Equipment Room - Shelf B'],
-        ['ITM070003','SI-BC-0018','Food Thermometer - Digital','Probe type, -50 to 300°C range',7,5,12,3,20,1200.00,5,'2027-09-01','Equipment Room - Shelf C'],
+        ['ITM070001','Digital Food Scale 5kg','Stainless steel platform, LCD display',7,5,8,2,15,2500.00,5,'2028-01-01','Equipment Room - Shelf A'],
+        ['ITM070002','Stainless Mixing Bowl 20L','Heavy gauge 304 stainless steel',7,5,15,3,30,850.00,5,'2027-06-01','Equipment Room - Shelf B'],
+        ['ITM070003','Food Thermometer - Digital','Probe type, -50 to 300°C range',7,5,12,3,20,1200.00,5,'2027-09-01','Equipment Room - Shelf C'],
         // Cleaning Materials (category 5, units: L=3, bottle=11, pack=7)
-        ['ITM050001','SI-BC-0019','Commercial Dishwashing Liquid','Concentrated, food safe formula',5,11,25,5,60,180.00,4,'2026-08-15','Cleaning Supplies Cabinet'],
-        ['ITM050002','SI-BC-0020','Disposable Gloves - Nitrile','Box of 100, food grade, powder-free',5,6,30,5,50,320.00,5,'2027-04-01','Cleaning Supplies Cabinet'],
+        ['ITM050001','Commercial Dishwashing Liquid','Concentrated, food safe formula',5,11,25,5,60,180.00,4,'2026-08-15','Cleaning Supplies Cabinet'],
+        ['ITM050002','Disposable Gloves - Nitrile','Box of 100, food grade, powder-free',5,6,30,5,50,320.00,5,'2027-04-01','Cleaning Supplies Cabinet'],
     ];
-    $stmt = $pdo->prepare("INSERT INTO inventory_items (item_code, barcode, name, description, category_id, unit_id, current_stock, min_stock, max_stock, unit_cost, supplier_id, expiration_date, storage_location, image, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, 'Active')");
-    foreach ($items as $it) { $stmt->execute($it); echo "  - {$it[2]}\n"; }
+    $stmt = $pdo->prepare("INSERT INTO inventory_items (item_code, name, description, category_id, unit_id, current_stock, min_stock, max_stock, unit_cost, supplier_id, expiration_date, storage_location, image, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, 'Active')");
+    foreach ($items as $it) { $stmt->execute($it); echo "  - {$it[1]}\n"; }
 
     // 7. Batches with FIFO data
     echo "\nInserting batches...\n";

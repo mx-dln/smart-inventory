@@ -31,10 +31,6 @@ $movements = $movStmt->fetchAll();
             </div>
         </div>
     </div>
-    <div class="flex space-x-2">
-        <button onclick="printBarcode(<?php echo $batch['id']; ?>)" class="px-3 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg text-xs font-medium hover:bg-emerald-100 transition-colors"><i class="fas fa-barcode mr-1"></i> Barcode</button>
-        <button onclick="printQR(<?php echo $batch['id']; ?>)" class="px-3 py-1.5 bg-purple-50 text-purple-700 border border-purple-200 rounded-lg text-xs font-medium hover:bg-purple-100 transition-colors"><i class="fas fa-qrcode mr-1"></i> QR</button>
-    </div>
 </div>
 
 <div class="grid grid-cols-4 gap-3 mb-6">

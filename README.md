@@ -8,10 +8,10 @@ A comprehensive, enterprise-grade inventory management system for raw materials 
 
 ### Core Modules
 - **Dashboard** — KPI cards, charts (Chart.js), low stock alerts, expiration alerts, recent transactions, skeleton loading
-- **Inventory Management** — Full CRUD with barcode/QR generation, stock in/out, categories, units, batch/lot tracking (FIFO)
+- **Inventory Management** — Full CRUD, stock in/out, categories, units, batch/lot tracking (FIFO)
 - **Production Requests** — Multi-status workflow (Pending → Approved → Released → Completed)
 - **Purchase Requisitions** — Multi-level approval workflow (Draft → Submitted → Dept → Inventory → Admin → Purchased → Received → Completed)
-- **Borrow & Return** — Equipment tracking with barcode scanning, overdue detection, penalty tracking
+- **Borrow & Return** — Equipment tracking, overdue detection, penalty tracking
 - **Suppliers** — Full management with performance analytics and star ratings
 
 ### Analytics & Intelligence
@@ -26,10 +26,9 @@ A comprehensive, enterprise-grade inventory management system for raw materials 
 - **Audit Logs** — Every action logged with IP, browser, timestamp
 
 ### Additional
-- **Label Designer** — Custom barcode/QR templates (5 sizes), field toggles, bulk print
+- **Label Designer** — Custom label templates (5 sizes), field toggles, bulk print
 - **Activity Timeline** — Per-item chronological history with filters
 - **Dark Mode** — Persistent toggle with zero-flash initialization
-- **Barcode/QR Scanner** — USB scanner support + mobile camera (html5-qrcode)
 
 ## Tech Stack
 
@@ -42,9 +41,6 @@ A comprehensive, enterprise-grade inventory management system for raw materials 
 | Chart.js | Dashboard charts |
 | DataTables | Table sorting, searching, pagination |
 | Flatpickr | Date pickers |
-| JsBarcode | Barcode generation |
-| QRCode.js | QR code generation |
-| html5-qrcode | Camera barcode scanning |
 
 ## Installation
 

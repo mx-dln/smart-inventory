@@ -30,7 +30,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'add' || $action === 'edit') {
         $id = $_POST['id'] ?? null;
         $itemCode = trim($_POST['item_code'] ?? '');
-        $barcode = trim($_POST['barcode'] ?? '');
         $name = trim($_POST['name'] ?? '');
         $description = trim($_POST['description'] ?? '');
         $categoryId = (int)($_POST['category_id'] ?? 0);
@@ -48,17 +47,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (empty($itemCode)) {
                 $itemCode = generateItemCode($categoryId, $pdo);
             }
-            if (empty($barcode)) {
-                $barcode = generateBarcode($pdo);
-            }
 
             $image = '';
             if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
                 $image = uploadFile($_FILES['image'], UPLOAD_PATH);
             }
 
-            $stmt = $pdo->prepare("INSERT INTO inventory_items (item_code, barcode, name, description, category_id, unit_id, current_stock, min_stock, max_stock, unit_cost, supplier_id, expiration_date, storage_location, image, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-            $stmt->execute([$itemCode, $barcode, $name, $description, $categoryId, $unitId, $currentStock, $minStock, $maxStock, $unitCost, $supplierId, $expirationDate, $storageLocation, $image, $status]);
+            $stmt = $pdo->prepare("INSERT INTO inventory_items (item_code, name, description, category_id, unit_id, current_stock, min_stock, max_stock, unit_cost, supplier_id, expiration_date, storage_location, image, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$itemCode, $name, $description, $categoryId, $unitId, $currentStock, $minStock, $maxStock, $unitCost, $supplierId, $expirationDate, $storageLocation, $image, $status]);
 
             $itemId = $pdo->lastInsertId();
 
@@ -185,10 +181,6 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === 'view_item') {
                     <p class="text-sm font-mono font-medium text-gray-800"><?php echo h($item['item_code']); ?></p>
                 </div>
                 <div class="bg-gray-50 p-3 rounded-lg">
-                    <p class="text-xs text-gray-500">Barcode</p>
-                    <p class="text-sm font-mono font-medium text-gray-800"><?php echo h($item['barcode']); ?></p>
-                </div>
-                <div class="bg-gray-50 p-3 rounded-lg">
                     <p class="text-xs text-gray-500">Category</p>
                     <p class="text-sm font-medium text-gray-800"><?php echo h($item['category_name'] ?? 'N/A'); ?></p>
                 </div>
@@ -281,65 +273,11 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === 'view_item') {
             </div>
             <?php endif; ?>
 
-            <div class="mb-4 p-4 bg-gray-50 rounded-lg text-center">
-                <p class="text-xs text-gray-500 mb-2">Barcode</p>
-                <div id="viewBarcode" class="flex justify-center"></div>
-                <p class="text-xs font-mono text-gray-600 mt-1"><?php echo h($item['barcode']); ?></p>
-            </div>
-
-            <div class="mb-4 p-4 bg-gray-50 rounded-lg text-center">
-                <p class="text-xs text-gray-500 mb-2">QR Code</p>
-                <div id="viewQrcode" class="flex justify-center"></div>
-            </div>
-
             <div class="flex space-x-2">
                 <button onclick="editItem(<?php echo $item['id']; ?>)" class="flex-1 px-3 py-2 bg-amber-500 text-white rounded-lg text-sm hover:bg-amber-600 transition-colors"><i class="fas fa-edit mr-1"></i> Edit</button>
-                <button onclick="printBarcode(<?php echo $item['id']; ?>)" class="flex-1 px-3 py-2 bg-emerald-500 text-white rounded-lg text-sm hover:bg-emerald-600 transition-colors"><i class="fas fa-barcode mr-1"></i> Barcode</button>
             </div>
         </div>
     </div>
-    <script>
-    JsBarcode('#viewBarcode', '<?php echo h($item['barcode']); ?>', { format: 'CODE128', width: 1.5, height: 40, displayValue: false });
-    $('#viewQrcode').qrcode({ text: '<?php echo h($item['barcode']); ?>', width: 120, height: 120 });
-    </script>
-    <?php
-    exit;
-}
-
-// AJAX handler for print_barcode
-if (isset($_GET['ajax']) && $_GET['ajax'] === 'print_barcode') {
-    $id = (int)($_GET['id'] ?? 0);
-    $stmt = $pdo->prepare("SELECT name, barcode FROM inventory_items WHERE id = ?");
-    $stmt->execute([$id]);
-    $item = $stmt->fetch();
-    if (!$item) { echo 'Item not found'; exit; }
-    ?>
-    <html><head><script src="https://cdn.jsdelivr.net/npm/jsbarcode@3/dist/JsBarcode.all.min.js"></script></head>
-    <body style="text-align:center;padding:20px;font-family:sans-serif;" onload="window.print()">
-        <h2><?php echo h($item['name']); ?></h2>
-        <svg id="barcodeSvg"></svg>
-        <p style="font-family:monospace;margin-top:5px;"><?php echo h($item['barcode']); ?></p>
-        <script>JsBarcode('#barcodeSvg', '<?php echo h($item['barcode']); ?>', { format: 'CODE128', width: 2, height: 80, displayValue: false });</script>
-    </body></html>
-    <?php
-    exit;
-}
-
-// AJAX handler for print_qr
-if (isset($_GET['ajax']) && $_GET['ajax'] === 'print_qr') {
-    $id = (int)($_GET['id'] ?? 0);
-    $stmt = $pdo->prepare("SELECT name, barcode FROM inventory_items WHERE id = ?");
-    $stmt->execute([$id]);
-    $item = $stmt->fetch();
-    if (!$item) { echo 'Item not found'; exit; }
-    ?>
-    <html><head><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script></head>
-    <body style="text-align:center;padding:20px;font-family:sans-serif;" onload="window.print()">
-        <h2><?php echo h($item['name']); ?></h2>
-        <div id="qrcode" style="display:inline-block;margin:20px 0;"></div>
-        <p style="font-family:monospace;"><?php echo h($item['barcode']); ?></p>
-        <script>new QRCode(document.getElementById('qrcode'), { text: '<?php echo h($item['barcode']); ?>', width: 160, height: 160 });</script>
-    </body></html>
     <?php
     exit;
 }
@@ -361,8 +299,7 @@ if (!empty($statusFilter)) {
     $params[] = $statusFilter;
 }
 if (!empty($searchFilter)) {
-    $query .= " AND (i.name LIKE ? OR i.item_code LIKE ? OR i.barcode LIKE ?)";
-    $params[] = "%$searchFilter%";
+    $query .= " AND (i.name LIKE ? OR i.item_code LIKE ?)";
     $params[] = "%$searchFilter%";
     $params[] = "%$searchFilter%";
 }
@@ -407,9 +344,14 @@ $viewId = isset($_GET['view']) ? (int)$_GET['view'] : 0;
         </select>
         <input type="text" id="filterSearch" placeholder="Search items..." value="<?php echo h($searchFilter); ?>" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-emerald-500 focus:border-emerald-500" onkeyup="applyFilters()">
     </div>
-    <button onclick="openAddModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-        <i class="fas fa-plus mr-1"></i> Add Item
-    </button>
+    <div class="flex items-center gap-2">
+        <button onclick="printPage('inventoryTable', 'Inventory Report')" class="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+            <i class="fas fa-print mr-1"></i> Print
+        </button>
+        <button onclick="openAddModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+            <i class="fas fa-plus mr-1"></i> Add Item
+        </button>
+    </div>
 </div>
 
 <!-- Items Table -->
@@ -419,13 +361,13 @@ $viewId = isset($_GET['view']) ? (int)$_GET['view'] : 0;
             <thead>
                 <tr class="bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     <th class="px-4 py-3">Item Code</th>
-                    <th class="px-4 py-3">Barcode</th>
                     <th class="px-4 py-3">Name</th>
                     <th class="px-4 py-3">Category</th>
                     <th class="px-4 py-3">Stock</th>
                     <th class="px-4 py-3">Min/Max</th>
                     <th class="px-4 py-3">Unit Cost</th>
                     <th class="px-4 py-3">Value</th>
+                    <th class="px-4 py-3">Supplier</th>
                     <th class="px-4 py-3">Expiration</th>
                     <th class="px-4 py-3">Status</th>
                     <th class="px-4 py-3">Actions</th>
@@ -438,7 +380,6 @@ $viewId = isset($_GET['view']) ? (int)$_GET['view'] : 0;
                 ?>
                 <tr class="text-sm text-gray-700 hover:bg-gray-50">
                     <td class="px-4 py-3 font-mono text-xs"><?php echo h($item['item_code']); ?></td>
-                    <td class="px-4 py-3 font-mono text-xs"><?php echo h($item['barcode']); ?></td>
                     <td class="px-4 py-3 font-medium"><?php echo h($item['name']); ?></td>
                     <td class="px-4 py-3"><?php echo h($item['category_name'] ?? 'N/A'); ?></td>
                     <td class="px-4 py-3">
@@ -450,6 +391,7 @@ $viewId = isset($_GET['view']) ? (int)$_GET['view'] : 0;
                     <td class="px-4 py-3 text-xs text-gray-500"><?php echo formatNumber($item['min_stock']); ?> / <?php echo formatNumber($item['max_stock']); ?></td>
                     <td class="px-4 py-3"><?php echo formatCurrency($item['unit_cost']); ?></td>
                     <td class="px-4 py-3 font-medium"><?php echo formatCurrency($item['current_stock'] * $item['unit_cost']); ?></td>
+                    <td class="px-4 py-3"><?php echo h($item['supplier_name'] ?? 'N/A'); ?></td>
                     <td class="px-4 py-3">
                         <?php if ($item['expiration_date']): ?>
                         <span class="px-2 py-1 text-xs rounded-full <?php echo $expStatus['class']; ?>">
@@ -469,8 +411,6 @@ $viewId = isset($_GET['view']) ? (int)$_GET['view'] : 0;
                             <button onclick="viewItem(<?php echo $item['id']; ?>)" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg" title="View"><i class="fas fa-eye"></i></button>
                             <button onclick="editItem(<?php echo $item['id']; ?>)" class="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg" title="Edit"><i class="fas fa-edit"></i></button>
                             <button onclick="quickStock(<?php echo $item['id']; ?>, '<?php echo h(addslashes($item['name'])); ?>', <?php echo $item['current_stock']; ?>)" class="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg" title="Quick Stock Update"><i class="fas fa-cubes"></i></button>
-                            <button onclick="printBarcode(<?php echo $item['id']; ?>)" class="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg" title="Print Barcode"><i class="fas fa-barcode"></i></button>
-                            <button onclick="printQR(<?php echo $item['id']; ?>)" class="p-1.5 text-purple-600 hover:bg-purple-50 rounded-lg" title="Print QR"><i class="fas fa-qrcode"></i></button>
                             <button onclick="deleteItem(<?php echo $item['id']; ?>, '<?php echo h(addslashes($item['name'])); ?>')" class="p-1.5 text-red-600 hover:bg-red-50 rounded-lg" title="Delete"><i class="fas fa-trash"></i></button>
                         </div>
                     </td>
@@ -502,11 +442,6 @@ $viewId = isset($_GET['view']) ? (int)$_GET['view'] : 0;
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Item Code</label>
                         <input type="text" name="item_code" id="itemCode" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-emerald-500 focus:border-emerald-500" readonly>
-                        <p class="text-xs text-gray-400 mt-1">Auto-generated</p>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Barcode</label>
-                        <input type="text" name="barcode" id="barcode" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-emerald-500 focus:border-emerald-500" readonly>
                         <p class="text-xs text-gray-400 mt-1">Auto-generated</p>
                     </div>
                     <div class="md:col-span-2">
@@ -638,90 +573,6 @@ $viewId = isset($_GET['view']) ? (int)$_GET['view'] : 0;
     </div>
 </div>
 
-<!-- Barcode Print Settings Modal -->
-<div id="printSettingsModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
-    <div class="flex items-center justify-center min-h-screen px-4">
-        <div class="fixed inset-0 bg-gray-900 bg-opacity-50" onclick="closeModal('printSettingsModal')"></div>
-        <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-md">
-            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-                <h3 class="text-lg font-semibold text-gray-900" id="printModalLabel">Barcode Print Settings</h3>
-                <button onclick="closeModal('printSettingsModal')" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="p-6">
-                <input type="hidden" id="printItemId">
-                <p class="text-sm font-medium text-gray-800 mb-4" id="printItemName"></p>
-                <div id="printBarcodePreview" class="flex justify-center mb-4 p-3 bg-gray-50 rounded-lg"></div>
-                <div class="grid grid-cols-2 gap-4 mb-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Copies</label>
-                        <input type="number" id="printCopies" value="10" min="1" max="500" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Columns per row</label>
-                        <select id="printColumns" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
-                            <option value="2">2</option>
-                            <option value="3" selected>3</option>
-                            <option value="4">4</option>
-                            <option value="5">5</option>
-                        </select>
-                    </div>
-                </div>
-                <p class="text-xs text-gray-400 mb-4">Layout optimized for A4 paper. Adjust columns based on label size needed.</p>
-                <div class="flex justify-end space-x-3">
-                    <button type="button" onclick="closeModal('printSettingsModal')" class="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50">Cancel</button>
-                    <button type="button" onclick="doPrintBarcode()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm hover:bg-emerald-700 transition-colors">
-                        <i class="fas fa-print mr-1"></i> Print
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- QR Print Settings Modal -->
-<div id="qrPrintSettingsModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
-    <div class="flex items-center justify-center min-h-screen px-4">
-        <div class="fixed inset-0 bg-gray-900 bg-opacity-50" onclick="closeModal('qrPrintSettingsModal')"></div>
-        <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-md">
-            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-                <h3 class="text-lg font-semibold text-gray-900" id="qrPrintModalLabel">QR Code Print Settings</h3>
-                <button onclick="closeModal('qrPrintSettingsModal')" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="p-6">
-                <input type="hidden" id="qrPrintItemId">
-                <p class="text-sm font-medium text-gray-800 mb-4" id="qrPrintItemName"></p>
-                <div id="qrPrintPreview" class="flex justify-center mb-4 p-3 bg-gray-50 rounded-lg"></div>
-                <div class="grid grid-cols-2 gap-4 mb-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Copies</label>
-                        <input type="number" id="qrPrintCopies" value="10" min="1" max="500" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Columns per row</label>
-                        <select id="qrPrintColumns" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
-                            <option value="2">2</option>
-                            <option value="3" selected>3</option>
-                            <option value="4">4</option>
-                            <option value="5">5</option>
-                        </select>
-                    </div>
-                </div>
-                <p class="text-xs text-gray-400 mb-4">Layout optimized for A4 paper. Each QR code includes item name and code.</p>
-                <div class="flex justify-end space-x-3">
-                    <button type="button" onclick="closeModal('qrPrintSettingsModal')" class="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50">Cancel</button>
-                    <button type="button" onclick="doPrintQR()" class="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm hover:bg-purple-700 transition-colors">
-                        <i class="fas fa-print mr-1"></i> Print
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3/dist/JsBarcode.all.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
-
 <?php if ($viewId > 0): ?>
 <script>
 $(document).ready(function() {
@@ -737,9 +588,7 @@ function openAddModal() {
     document.getElementById('itemForm').reset();
     document.getElementById('itemId').value = '';
     document.getElementById('itemCode').readOnly = false;
-    document.getElementById('barcode').readOnly = false;
     document.getElementById('itemCode').value = '';
-    document.getElementById('barcode').value = '';
     document.getElementById('imagePreview').classList.add('hidden');
     document.getElementById('itemModal').classList.remove('hidden');
 }
@@ -748,7 +597,6 @@ function editItem(id) {
     document.getElementById('formAction').value = 'edit';
     document.getElementById('modalTitle').textContent = 'Edit Item';
     document.getElementById('itemCode').readOnly = true;
-    document.getElementById('barcode').readOnly = true;
     document.getElementById('imagePreview').classList.add('hidden');
 
     $.ajax({
@@ -762,7 +610,6 @@ function editItem(id) {
             }
             document.getElementById('itemId').value = item.id;
             document.getElementById('itemCode').value = item.item_code || '';
-            document.getElementById('barcode').value = item.barcode || '';
             document.getElementById('itemName').value = item.name || '';
             document.getElementById('itemDescription').value = item.description || '';
             document.getElementById('itemCategory').value = item.category_id || '';
@@ -855,57 +702,6 @@ function reinitDataTables() {
     });
 }
 
-function printBarcode(id) {
-    $('#printItemId').val(id);
-    $('#printModalLabel').text('Barcode Print Settings');
-    $('#printCopies').val(10);
-    // Get item name for preview
-    $.ajax({ url: 'ajax/get_item.php', data: { id: id }, dataType: 'json', success: function(d) {
-        $('#printItemName').text(d.name || 'Item');
-        $('#printBarcodePreview').html('<svg id="barcodePreview"></svg>');
-        JsBarcode('#barcodePreview', d.barcode || '', { format: 'CODE128', width: 1.5, height: 30, displayValue: false });
-    }});
-    $('#printSettingsModal').removeClass('hidden');
-}
-
-function doPrintBarcode() {
-    var id = $('#printItemId').val();
-    var copies = $('#printCopies').val();
-    var cols = $('#printColumns').val();
-    window.open('ajax/print_barcode.php?id=' + id + '&copies=' + copies + '&cols=' + cols, '_blank');
-    $('#printSettingsModal').addClass('hidden');
-}
-
-function doPrintBarcodeBulk() {
-    var ids = [];
-    $('.bulk-check:checked').each(function() { ids.push($(this).val()); });
-    if (ids.length === 0) { showToast('Select items to print', 'warning'); return; }
-    var copies = $('#bulkPrintCopies').val();
-    var cols = $('#bulkPrintColumns').val();
-    window.open('ajax/print_barcode_bulk.php?ids=' + ids.join(',') + '&copies=' + copies + '&cols=' + cols, '_blank');
-    $('#bulkPrintModal').addClass('hidden');
-}
-
-function printQR(id) {
-    $('#qrPrintItemId').val(id);
-    $('#qrPrintModalLabel').text('QR Code Print Settings');
-    $('#qrPrintCopies').val(10);
-    $.ajax({ url: 'ajax/get_item.php', data: { id: id }, dataType: 'json', success: function(d) {
-        $('#qrPrintItemName').text(d.name || 'Item');
-        $('#qrPrintPreview').html('');
-        new QRCode(document.getElementById('qrPrintPreview'), { text: d.barcode || '', width: 100, height: 100 });
-    }});
-    $('#qrPrintSettingsModal').removeClass('hidden');
-}
-
-function doPrintQR() {
-    var id = $('#qrPrintItemId').val();
-    var copies = $('#qrPrintCopies').val();
-    var cols = $('#qrPrintColumns').val();
-    window.open('ajax/print_qr.php?id=' + id + '&copies=' + copies + '&cols=' + cols, '_blank');
-    $('#qrPrintSettingsModal').addClass('hidden');
-}
-
 function applyFilters() {
     var cat = document.getElementById('filterCategory').value;
     var status = document.getElementById('filterStatus').value;
@@ -951,7 +747,7 @@ $(document).on('submit', '#itemForm', function(e) {
                             var $t = $(this);
                             if ($t.find('tbody tr:first td[colspan]').length > 0) return;
                             $t.DataTable({
-                                responsive: true, pageLength: 25,
+                                pageLength: 25,
                                 lengthMenu: [[10,25,50,100,-1],[10,25,50,100,'All']],
                                 dom: '<"dt-toolbar"lf>t<"dt-footer"ip>',
                                 language: { search: 'Search:', searchPlaceholder: 'Type to search...', lengthMenu: 'Show _MENU_ entries', info: 'Showing _START_ to _END_ of _TOTAL_ entries', infoEmpty: 'No entries found', infoFiltered: '(filtered from _MAX_ total entries)', paginate: { first: '«', previous: '‹', next: '›', last: '»' } },

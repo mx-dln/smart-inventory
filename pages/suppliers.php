@@ -49,13 +49,14 @@ $success = $_GET['success'] ?? ''; $error = $_GET['error'] ?? '';
 <?php if ($success): ?><div class="bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-lg mb-4"><i class="fas fa-check-circle mr-2"></i><?php echo h($success); ?></div><?php endif; ?>
 <?php if ($error): ?><div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4"><i class="fas fa-exclamation-circle mr-2"></i><?php echo h($error); ?></div><?php endif; ?>
 
-<div class="flex justify-end mb-6">
+<div class="flex justify-end mb-6 gap-2">
+    <button onclick="printPage('suppliersTable', 'Suppliers Report')" class="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium"><i class="fas fa-print mr-1"></i> Print</button>
     <button onclick="openSupplierModal('add')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium"><i class="fas fa-plus mr-1"></i> Add Supplier</button>
 </div>
 
 <div class="table-container">
     <div class="overflow-x-auto">
-        <table class="datatable min-w-full">
+        <table class="datatable min-w-full" id="suppliersTable">
             <thead><tr class="bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 <th class="px-4 py-3">Company</th><th class="px-4 py-3">Contact</th><th class="px-4 py-3">Phone</th><th class="px-4 py-3">Email</th><th class="px-4 py-3">Products</th><th class="px-4 py-3">Items</th><th class="px-4 py-3">Status</th><th class="px-4 py-3">Actions</th>
             </tr></thead>

@@ -39,8 +39,6 @@ $totalValue = $item['current_stock'] * $item['unit_cost'];
     </div>
     <div class="flex space-x-2">
         <button onclick="editItem(<?php echo $item['id']; ?>)" class="px-3 py-1.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-lg text-xs font-medium hover:bg-amber-100 transition-colors"><i class="fas fa-edit mr-1"></i> Edit</button>
-        <button onclick="printBarcode(<?php echo $item['id']; ?>)" class="px-3 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg text-xs font-medium hover:bg-emerald-100 transition-colors"><i class="fas fa-barcode mr-1"></i> Barcode</button>
-        <button onclick="printQR(<?php echo $item['id']; ?>)" class="px-3 py-1.5 bg-purple-50 text-purple-700 border border-purple-200 rounded-lg text-xs font-medium hover:bg-purple-100 transition-colors"><i class="fas fa-qrcode mr-1"></i> QR</button>
     </div>
 </div>
 
@@ -103,15 +101,6 @@ $totalValue = $item['current_stock'] * $item['unit_cost'];
     </div>
     <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
         <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-            <i class="fas fa-barcode text-gray-400 text-sm"></i>
-        </div>
-        <div>
-            <p class="text-xs text-gray-500">Barcode</p>
-            <p class="text-sm font-mono font-medium text-gray-800"><?php echo h($item['barcode']); ?></p>
-        </div>
-    </div>
-    <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-        <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
             <i class="fas fa-truck text-gray-400 text-sm"></i>
         </div>
         <div>
@@ -139,9 +128,9 @@ $totalValue = $item['current_stock'] * $item['unit_cost'];
     </div>
 </div>
 
-<!-- Barcode & QR + Transaction History -->
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <div class="lg:col-span-2">
+<!-- Transaction History -->
+<div class="grid grid-cols-1 gap-6">
+    <div>
         <h5 class="font-semibold text-gray-800 mb-3 flex items-center">
             <i class="fas fa-exchange-alt text-gray-400 mr-2"></i> Transaction History
         </h5>
@@ -183,19 +172,4 @@ $totalValue = $item['current_stock'] * $item['unit_cost'];
         </div>
         <?php endif; ?>
     </div>
-    <div class="space-y-4">
-        <div class="bg-white border border-gray-200 rounded-xl p-4 text-center">
-            <p class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">Barcode</p>
-            <div id="viewBarcode" class="flex justify-center"></div>
-            <p class="text-xs font-mono text-gray-500 mt-2"><?php echo h($item['barcode']); ?></p>
-        </div>
-        <div class="bg-white border border-gray-200 rounded-xl p-4 text-center">
-            <p class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">QR Code</p>
-            <div id="viewQrcode" class="flex justify-center"></div>
-        </div>
-    </div>
 </div>
-<script>
-JsBarcode('#viewBarcode', '<?php echo h($item['barcode']); ?>', { format: 'CODE128', width: 1.5, height: 40, displayValue: false });
-$('#viewQrcode').qrcode({ text: '<?php echo h($item['barcode']); ?>', width: 120, height: 120 });
-</script>

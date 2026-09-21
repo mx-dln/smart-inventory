@@ -292,6 +292,9 @@ $statusColors = [
         <input type="text" id="filterSearch" placeholder="Search borrower or item..." value="<?php echo h($searchFilter); ?>" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-emerald-500 focus:border-emerald-500" onkeyup="applyFilters()">
     </div>
     <div class="flex gap-2">
+        <button onclick="printPage('borrowTable', 'Borrow Records Report')" class="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+            <i class="fas fa-print mr-1"></i> Print
+        </button>
         <button onclick="openReturnModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
             <i class="fas fa-undo-alt mr-1"></i> Return
         </button>
@@ -400,7 +403,6 @@ $statusColors = [
                                 <option value="<?php echo $item['id']; ?>" data-stock="<?php echo $item['current_stock']; ?>"><?php echo h($item['name']); ?> (<?php echo h($item['item_code']); ?>)</option>
                                 <?php endforeach; ?>
                             </select>
-                            <input type="text" id="barcodeScan" placeholder="Scan barcode..." class="w-40 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-emerald-500 focus:border-emerald-500 font-mono" onkeyup="lookupBarcode(this.value)">
                         </div>
                         <p id="borrowStockInfo" class="text-xs text-gray-400 mt-1"></p>
                     </div>
@@ -656,13 +658,10 @@ function openReturnModal(id) {
     } else {
         document.getElementById('returnRecordInfo').innerHTML =
             '<div class="mb-4">' +
-            '<label class="block text-sm font-medium text-gray-700 mb-1">Select or Scan Item <span class="text-red-500">*</span></label>' +
+            '<label class="block text-sm font-medium text-gray-700 mb-1">Select Item <span class="text-red-500">*</span></label>' +
             '<select id="returnBorrowSelect" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-emerald-500 focus:border-emerald-500" onchange="loadReturnByBorrow(this.value)">' +
             '<option value="">Select a borrowed item...</option>' +
             '</select>' +
-            '<div class="mt-2 flex gap-2">' +
-            '<input type="text" id="returnBarcodeScan" placeholder="Scan barcode to find borrow..." class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-emerald-500 focus:border-emerald-500 font-mono" onkeyup="lookupReturnByBarcode(this.value)">' +
-            '</div>' +
             '</div>' +
             '<div id="returnSelectInfo" class="text-center text-sm text-gray-400 py-4">Select a record above to process return.</div>';
         loadActiveBorrows();
@@ -691,46 +690,6 @@ function loadReturnByBorrow(id) {
     } else {
         document.getElementById('returnSelectInfo').innerHTML = '<div class="text-center text-sm text-gray-400 py-4">Select a record above to process return.</div>';
     }
-}
-
-function lookupBarcode(code) {
-    if (code.length < 3) return;
-    $.ajax({
-        url: 'ajax/get_item.php',
-        data: { id: 0, barcode: code },
-        dataType: 'json',
-        success: function(item) {
-            if (item && item.id) {
-                document.getElementById('borrowItemId').value = item.id;
-                $('#borrowItemId').trigger('change');
-                document.getElementById('barcodeScan').value = '';
-            }
-        }
-    });
-}
-
-function lookupReturnByBarcode(code) {
-    if (code.length < 3) return;
-    $.ajax({
-        url: 'ajax/get_item.php',
-        data: { barcode: code },
-        dataType: 'json',
-        success: function(item) {
-            if (item && item.id) {
-                $.ajax({
-                    url: 'index?page=borrow&ajax=find_by_item&item_id=' + item.id,
-                    dataType: 'json',
-                    success: function(records) {
-                        if (records && records.length > 0) {
-                            openReturnModal(records[0].id);
-                        } else {
-                            showToast('No active borrow found for this item', 'warning');
-                        }
-                    }
-                });
-            }
-        }
-    });
 }
 
 function togglePenalty() {

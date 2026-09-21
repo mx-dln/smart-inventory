@@ -14,7 +14,7 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
     fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
 
     if ($type === 'inventory') {
-        fputcsv($output, ['Item Code', 'Barcode', 'Name', 'Category', 'Unit', 'Stock', 'Min Stock', 'Max Stock', 'Unit Cost', 'Total Value', 'Status'], ',', '"', '');
+        fputcsv($output, ['Item Code', 'Name', 'Category', 'Unit', 'Stock', 'Min Stock', 'Max Stock', 'Unit Cost', 'Total Value', 'Status'], ',', '"', '');
         $q = "SELECT i.*, c.category_name, u.unit_name FROM inventory_items i LEFT JOIN categories c ON i.category_id=c.id LEFT JOIN units u ON i.unit_id=u.id WHERE 1=1";
         $params = [];
         if ($categoryFilter) { $q .= " AND i.category_id=?"; $params[]=$categoryFilter; }
@@ -22,7 +22,7 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
         $q .= " ORDER BY i.name";
         $stmt = $pdo->prepare($q); $stmt->execute($params);
         foreach ($stmt as $r) {
-            fputcsv($output, [$r['item_code'], $r['barcode'], $r['name'], $r['category_name'], $r['unit_name'], $r['current_stock'], $r['min_stock'], $r['max_stock'], $r['unit_cost'], $r['current_stock']*$r['unit_cost'], $r['status']], ',', '"', '');
+            fputcsv($output, [$r['item_code'], $r['name'], $r['category_name'], $r['unit_name'], $r['current_stock'], $r['min_stock'], $r['max_stock'], $r['unit_cost'], $r['current_stock']*$r['unit_cost'], $r['status']], ',', '"', '');
         }
     } elseif ($type === 'movement') {
         fputcsv($output, ['Date', 'Item', 'Type', 'Reference', 'Qty', 'Previous', 'New', 'Unit Cost', 'Total', 'User'], ',', '"', '');
@@ -261,7 +261,6 @@ if ($type === 'inventory') {
             <thead>
                 <tr class="bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     <th class="px-4 py-3">Item Code</th>
-                    <th class="px-4 py-3">Barcode</th>
                     <th class="px-4 py-3">Name</th>
                     <th class="px-4 py-3">Category</th>
                     <th class="px-4 py-3">Unit</th>
@@ -277,7 +276,6 @@ if ($type === 'inventory') {
                 <?php foreach ($data as $r): ?>
                 <tr class="text-sm text-gray-700 hover:bg-gray-50">
                     <td class="px-4 py-3 font-mono text-xs"><?php echo h($r['item_code']); ?></td>
-                    <td class="px-4 py-3 font-mono text-xs"><?php echo h($r['barcode']); ?></td>
                     <td class="px-4 py-3 font-medium"><?php echo h($r['name']); ?></td>
                     <td class="px-4 py-3"><?php echo h($r['category_name'] ?? 'N/A'); ?></td>
                     <td class="px-4 py-3"><?php echo h($r['unit_name'] ?? 'N/A'); ?></td>
@@ -290,7 +288,7 @@ if ($type === 'inventory') {
                 </tr>
                 <?php endforeach; ?>
                 <?php if (count($data) == 0): ?>
-                <tr><td colspan="11" class="px-4 py-8 text-center text-gray-500">No inventory items found.</td></tr>
+                <tr><td colspan="10" class="px-4 py-8 text-center text-gray-500">No inventory items found.</td></tr>
                 <?php endif; ?>
             </tbody>
         </table>

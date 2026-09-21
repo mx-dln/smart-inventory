@@ -225,29 +225,14 @@ table.dataTable.no-footer {
     border: 1px solid #e5e7eb;
     border-radius: 0.75rem;
     background: white;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+.table-container table {
+    width: 100%;
 }
 .table-container table.dataTable {
     width: 100% !important;
-}
-/* DataTables scrollX wrapper should not hide overflow */
-.dataTables_scrollBody {
-    overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch;
-}
-.dataTables_scrollHead {
-    overflow: hidden !important;
-}
-.dataTables_scroll {
-    overflow: hidden !important;
-}
-.table-container .dataTables_scrollBody table.dataTable {
-    width: auto !important;
-    min-width: 100%;
-}
-
-
-.table-container table {
-    width: 100%;
 }
 .table-container td,
 .table-container th {
@@ -310,13 +295,6 @@ html.dark .table-container {
 }
 .stat-card:hover {
     transform: translateY(-2px);
-}
-
-/* Barcode font */
-.barcode-label {
-    font-family: 'Libre Barcode 128', 'Code128', monospace;
-    font-size: 32px;
-    letter-spacing: 2px;
 }
 
 /* Print */

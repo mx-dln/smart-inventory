@@ -284,9 +284,14 @@ $viewId = isset($_GET['view']) ? (int)$_GET['view'] : 0;
             <option value="Disposed" <?php echo $statusFilter == 'Disposed' ? 'selected' : ''; ?>>Disposed</option>
         </select>
     </div>
-    <button onclick="openAddModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-        <i class="fas fa-plus mr-1"></i> Add Batch
-    </button>
+    <div class="flex items-center gap-2">
+        <button onclick="printPage('batchesTable', 'Batches Report')" class="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+            <i class="fas fa-print mr-1"></i> Print
+        </button>
+        <button onclick="openAddModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+            <i class="fas fa-plus mr-1"></i> Add Batch
+        </button>
+    </div>
 </div>
 
 <div class="table-container">
@@ -338,8 +343,6 @@ $viewId = isset($_GET['view']) ? (int)$_GET['view'] : 0;
                         <div class="flex items-center space-x-1">
                             <button onclick="viewBatch(<?php echo $batch['id']; ?>)" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg" title="View"><i class="fas fa-eye"></i></button>
                             <button onclick="editBatch(<?php echo $batch['id']; ?>)" class="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg" title="Edit"><i class="fas fa-edit"></i></button>
-                            <button onclick="printBarcode(<?php echo $batch['id']; ?>)" class="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg" title="Print Barcode"><i class="fas fa-barcode"></i></button>
-                            <button onclick="printBatchQR(<?php echo $batch['id']; ?>)" class="p-1.5 text-purple-600 hover:bg-purple-50 rounded-lg" title="Print QR"><i class="fas fa-qrcode"></i></button>
                             <button onclick="deleteBatch(<?php echo $batch['id']; ?>, '<?php echo h(addslashes($batch['batch_number'])); ?>')" class="p-1.5 text-red-600 hover:bg-red-50 rounded-lg" title="Delete"><i class="fas fa-trash"></i></button>
                         </div>
                     </td>
@@ -458,9 +461,6 @@ $viewId = isset($_GET['view']) ? (int)$_GET['view'] : 0;
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3/dist/JsBarcode.all.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
 <?php if ($viewId > 0): ?>
 <script>
 $(document).ready(function() {
@@ -545,46 +545,6 @@ function syncRemaining() {
     if (action === 'add') {
         document.getElementById('batchRemaining').value = document.getElementById('batchQuantity').value;
     }
-}
-
-function printBarcode(id) {
-    $.ajax({
-        url: 'ajax/get_batch.php?id=' + id,
-        dataType: 'json',
-        success: function(d) {
-            if (!d) return;
-            var w = window.open('', '_blank');
-            w.document.write('<html><head><script src="https://cdn.jsdelivr.net/npm/jsbarcode@3/dist/JsBarcode.all.min.js"><\/script><\/head>');
-            w.document.write('<body style="text-align:center;padding:20px;font-family:sans-serif;" onload="window.print()">');
-            w.document.write('<h2>' + d.batch_number + '</h2>');
-            w.document.write('<p style="color:#666;font-size:14px;">' + (d.item_name || '') + '</p>');
-            w.document.write('<svg id="bSvg"></svg>');
-            w.document.write('<p style="font-family:monospace;margin-top:5px;">' + d.batch_number + '</p>');
-            w.document.write('<script>JsBarcode("#bSvg", "' + d.batch_number + '", {format:"CODE128",width:2,height:80,displayValue:false});<\/script>');
-            w.document.write('<\/body><\/html>');
-            w.document.close();
-        }
-    });
-}
-
-function printBatchQR(id) {
-    $.ajax({
-        url: 'ajax/get_batch.php?id=' + id,
-        dataType: 'json',
-        success: function(d) {
-            if (!d) return;
-            var w = window.open('', '_blank');
-            w.document.write('<html><head><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script><\/head>');
-            w.document.write('<body style="text-align:center;padding:20px;font-family:sans-serif;" onload="window.print()">');
-            w.document.write('<h2>' + d.batch_number + '</h2>');
-            w.document.write('<p style="color:#666;font-size:14px;">' + (d.item_name || '') + '</p>');
-            w.document.write('<div id="qRcode" style="display:inline-block;margin:20px 0;"></div>');
-            w.document.write('<p style="font-family:monospace;">' + d.batch_number + '</p>');
-            w.document.write('<script>new QRCode(document.getElementById("qRcode"),{text:"' + d.batch_number + '",width:160,height:160});<\/script>');
-            w.document.write('<\/body><\/html>');
-            w.document.close();
-        }
-    });
 }
 
 function applyFilters() {
