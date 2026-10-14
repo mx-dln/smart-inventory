@@ -44,6 +44,84 @@ A comprehensive, enterprise-grade inventory management system for raw materials 
 
 ## Installation Guide
 
+## Super Beginner Guide
+
+### Option A: XAMPP on Windows
+
+This is the easiest option if you are new to PHP.
+
+1. Download and install XAMPP from [apachefriends.org](https://www.apachefriends.org/).
+2. Open **XAMPP Control Panel**.
+3. Click **Start** beside **Apache** and **MySQL**. Both services should turn green.
+4. Open `C:\xampp\htdocs` in File Explorer.
+5. Copy this project folder into it and make sure the final path is:
+
+   ```text
+   C:\xampp\htdocs\smart-inventory
+   ```
+
+6. Open [http://localhost/phpmyadmin](http://localhost/phpmyadmin).
+7. Click **New**, create a database named `smart_inventory`, and use `utf8mb4` if asked for a collation.
+8. Select `smart_inventory`, click **Import**, and import these files in this order:
+   - `database/schema.sql`
+   - `database/schema_extended.sql`
+9. Open `config/database.php`. The default XAMPP settings are usually already correct:
+
+   ```php
+   DB_HOST = localhost
+   DB_NAME = smart_inventory
+   DB_USER = root
+   DB_PASS = ''
+   ```
+
+10. Open PowerShell in the project folder and run:
+
+    ```powershell
+    php database/seeder.php
+    ```
+
+11. Open [http://localhost/smart-inventory/](http://localhost/smart-inventory/).
+12. Log in with `admin` / `admin123` and change the password before real use.
+
+If the page says **Connection failed**, check that MySQL is running and that the database name and password in `config/database.php` match phpMyAdmin.
+
+### Option B: EnvKit or another PHP environment manager
+
+This repository does not currently include an EnvKit-specific configuration file or `.env` loader. EnvKit can still be used to provide PHP, Composer, and MySQL, but the application reads database settings from `config/database.php`.
+
+1. Install PHP 8.0+, Composer, and MySQL through EnvKit.
+2. Make sure the PHP command works:
+
+   ```bash
+   php -v
+   composer --version
+   ```
+
+3. Create a MySQL database named `smart_inventory`.
+4. Import `database/schema.sql` and then `database/schema_extended.sql`.
+5. Update `config/database.php` with the host, database name, username, and password supplied by EnvKit.
+6. Install the PHP packages:
+
+   ```bash
+   composer install
+   ```
+
+7. Seed the sample records:
+
+   ```bash
+   php database/seeder.php
+   ```
+
+8. Start the development server from the project folder:
+
+   ```bash
+   php -S localhost:8000
+   ```
+
+9. Open [http://localhost:8000/](http://localhost:8000/).
+
+If by “EnvKit” you mean a specific hosting or deployment product, use its PHP/MySQL setup to replace steps 1–3, then keep the project configuration and database import steps unchanged.
+
 ### Requirements
 
 - PHP 8.0 or newer with PDO and PDO MySQL enabled
