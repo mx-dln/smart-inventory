@@ -138,12 +138,12 @@ $role = $_SESSION['role'] ?? '';
             </div>
 
             <div class="sidebar-group">
-                <div class="sidebar-group-title <?php echo in_array($page, ['reports', 'periodic-reports']) ? 'active' : ''; ?>">
+                <div class="sidebar-group-title <?php echo in_array($page, ['reports', 'periodic-reports', 'report-settings']) ? 'active' : ''; ?>">
                     <i class="fas fa-file-alt w-5"></i>
                     <span>Reports</span>
                     <i class="fas fa-chevron-down ml-auto text-xs transition-transform"></i>
                 </div>
-                <div class="sidebar-submenu <?php echo in_array($page, ['reports', 'periodic-reports']) ? 'open' : ''; ?>">
+                <div class="sidebar-submenu <?php echo in_array($page, ['reports', 'periodic-reports', 'report-settings']) ? 'open' : ''; ?>">
                     <a href="index?page=periodic-reports" class="sidebar-sub-link <?php echo $page == 'periodic-reports' ? 'active' : ''; ?>">
                         <i class="fas fa-file-invoice w-4"></i>
                         <span>Weekly / Monthly Inventory</span>
@@ -168,6 +168,12 @@ $role = $_SESSION['role'] ?? '';
                         <i class="fas fa-chart-bar w-4"></i>
                         <span>Transactions</span>
                     </a>
+                    <?php if ($role === 'Administrator'): ?>
+                    <a href="index?page=report-settings" class="sidebar-sub-link <?php echo $page == 'report-settings' ? 'active' : ''; ?>">
+                        <i class="fas fa-cog w-4"></i>
+                        <span>Report Settings</span>
+                    </a>
+                    <?php endif; ?>
                 </div>
             </div>
 

@@ -20,6 +20,7 @@ $allowedPages = [
     'suppliers' => ['Administrator', 'Inventory Manager'],
     'supplier-analytics' => ['Administrator', 'Inventory Manager'],
     'reports' => ['Administrator', 'Inventory Manager', 'Production Staff', 'Faculty'],
+    'report-settings' => ['Administrator', 'Inventory Manager', 'Production Staff', 'Faculty'],
     'periodic-reports' => ['Administrator', 'Inventory Manager', 'Production Staff', 'Faculty'],
     'users' => ['Administrator'],
     'settings' => ['Administrator'],

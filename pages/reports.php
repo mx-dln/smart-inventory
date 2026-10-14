@@ -5,6 +5,11 @@ $fromDate = $_GET['from'] ?? date('Y-m-01');
 $toDate = $_GET['to'] ?? date('Y-m-d');
 $categoryFilter = $_GET['category'] ?? '';
 $supplierFilter = $_GET['supplier'] ?? '';
+$reportPreparedBy = $_SESSION['full_name'] ?? $_SESSION['username'] ?? 'System User';
+$preparedStmt = $pdo->prepare("SELECT setting_value FROM system_settings WHERE setting_key = 'report_prepared_by' LIMIT 1");
+$preparedStmt->execute();
+$savedPreparedBy = $preparedStmt->fetchColumn();
+if ($savedPreparedBy) $reportPreparedBy = $savedPreparedBy;
 
 // Handle CSV export - MUST be before any HTML output
 if (isset($_GET['export']) && $_GET['export'] === 'csv') {
@@ -133,6 +138,10 @@ if ($type === 'inventory') {
     </a>
 </div>
 
+<div class="hidden print:block text-base text-gray-700 mb-4" style="font-size:16px !important; font-weight:700 !important;">
+    Prepared by: <strong><?php echo h($reportPreparedBy); ?></strong>
+</div>
+
 <!-- Filter Form -->
 <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
     <form method="GET" action="index.php" class="flex flex-wrap items-end gap-3">
@@ -178,7 +187,7 @@ if ($type === 'inventory') {
     <a href="index?page=reports&type=<?php echo h($type); ?>&from=<?php echo $fromDate; ?>&to=<?php echo $toDate; ?>&category=<?php echo $categoryFilter; ?>&supplier=<?php echo $supplierFilter; ?>&export=csv" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm hover:bg-emerald-700 transition-colors">
         <i class="fas fa-file-csv mr-1"></i> Export CSV
     </a>
-    <button onclick="window.print()" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors">
+    <button onclick="printPage('', '<?php echo h(ucwords(str_replace('-', ' ', $type))); ?> Report')" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors">
         <i class="fas fa-print mr-1"></i> Print
     </button>
 </div>

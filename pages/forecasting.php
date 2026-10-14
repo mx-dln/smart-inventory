@@ -35,7 +35,7 @@ if ($selectedItemId > 0 && $_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['
         $minStock = (float)$itemData['min_stock'];
         $maxStock = (float)$itemData['max_stock'];
 
-        $stmt = $pdo->prepare("SELECT DATE_FORMAT(date_released, '%Y-%m') as month, COALESCE(SUM(quantity), 0) as total FROM stock_out WHERE item_id = ? AND date_released >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH) GROUP BY DATE_FORMAT(date_released, '%Y-%m') ORDER BY month ASC");
+        $stmt = $pdo->prepare("SELECT DATE_FORMAT(date_released, '%Y-%m') as month, COALESCE(SUM(ABS(quantity)), 0) as total FROM stock_out WHERE item_id = ? AND date_released >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH) GROUP BY DATE_FORMAT(date_released, '%Y-%m') ORDER BY month ASC");
         $stmt->execute([$selectedItemId]);
         $monthlyUsage = $stmt->fetchAll();
 
@@ -56,7 +56,7 @@ if ($selectedItemId > 0 && $_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['
 
         if (count($nonZero) >= 1) {
             if ($method === 'SMA') {
-                $forecast = array_sum($recentValues) / count($recentValues);
+                $forecast = array_sum($recentValues) / max(1, count($recentValues));
             } else {
                 $count = count($recentValues);
                 $weights = range(1, $count);
@@ -113,6 +113,12 @@ if ($selectedItemId > 0 && $_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['
     </button>
     <?php endif; ?>
 </div>
+
+<?php if ($forecast !== null): ?>
+<div class="hidden print:block text-base text-gray-700 mb-4" style="font-size:16px !important; font-weight:700 !important;">
+    Prepared by: <strong><?php echo h($_SESSION['full_name'] ?? $_SESSION['username'] ?? 'System User'); ?></strong>
+</div>
+<?php endif; ?>
 
 <?php if (!empty($errors)): ?>
 <?php foreach ($errors as $err): ?>

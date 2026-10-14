@@ -31,6 +31,7 @@
 <script>
 var csrfToken = '<?php echo $_SESSION['csrf_token']; ?>';
 var currentUserName = '<?php echo h($_SESSION['full_name'] ?? $_SESSION['username']); ?>';
+var currentPreparedBy = '<?php echo h($reportPreparedBy ?? ($_SESSION['full_name'] ?? $_SESSION['username'] ?? 'System User')); ?>';
 var BASE_URL_JS = '<?php echo BASE_URL; ?>';
 var confirmCallback = null;
 function showConfirm(message, fn) {

@@ -94,7 +94,6 @@ $error = $_GET['error'] ?? '';
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
                 <?php
                 $fields = [
-                    'logo' => 'Logo',
                     'item_name' => 'Item Name',
                     'batch' => 'Batch Number',
                     'unit' => 'Unit',
@@ -225,9 +224,6 @@ function updatePreview() {
 function renderPreview(item) {
     var fields = getSelectedFields();
     var html = '<div class="p-3 text-center" style="font-family:Arial,sans-serif;">';
-    if (fields.includes('logo')) {
-        html += '<div class="text-xs font-bold text-gray-500 mb-1">LOGO</div>';
-    }
     if (fields.includes('item_name')) {
         html += '<div class="text-sm font-bold text-gray-900 truncate">' + (item.name || '') + '</div>';
     }
@@ -337,7 +333,6 @@ function buildPrintHtml(items, copies, cols, fieldsStr) {
     html += '.label{text-align:center;padding:2mm 1mm;border:1px dashed #ccc;border-radius:1mm;page-break-inside:avoid;overflow:hidden}';
     html += '.label .field-name{font-size:' + titleSize + ';font-weight:bold;color:#333;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}';
     html += '.label .field-sm{font-size:' + fontSize + ';color:#666;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}';
-    html += '.label .logo-placeholder{font-size:7pt;font-weight:bold;color:#999;margin-bottom:1mm}';
     html += '.no-print{display:block;text-align:center;margin:10px 0}';
     html += '.no-print button{padding:10px 30px;background:#059669;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px;margin:0 4px}';
     html += '@media print{@page{size:A4;margin:6mm 6mm}body{margin:0;padding:0}.page{width:100%;min-height:auto;padding:0;margin:0}.no-print{display:none!important}.label{border:1px solid #ddd}}';
@@ -349,9 +344,6 @@ function buildPrintHtml(items, copies, cols, fieldsStr) {
         var item = items[si];
         for (var c = 0; c < copies; c++) {
             html += '<div class="label">';
-            if (fields.indexOf('logo') !== -1) {
-                html += '<div class="logo-placeholder">LOGO</div>';
-            }
             if (fields.indexOf('item_name') !== -1) {
                 html += '<div class="field-name">' + (item.name || '') + '</div>';
             }

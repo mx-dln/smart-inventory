@@ -90,7 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <!-- Header -->
             <div class="text-center mb-8">
                 <div class="mx-auto mb-4">
-                    <img src="assets/images/isu_logo.png" alt="ISU Logo" class="h-20 w-auto">
+                    <img src="assets/images/isu_logo.png" alt="ISU Logo" class="block h-20 w-auto mx-auto">
                 </div>
                 <h1 class="text-xl font-bold text-gray-900"><?php echo APP_NAME; ?></h1>
                 <p class="text-sm text-gray-500 mt-1"><?php echo SCHOOL_NAME; ?></p>
