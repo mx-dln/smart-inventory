@@ -42,15 +42,54 @@ A comprehensive, enterprise-grade inventory management system for raw materials 
 | DataTables | Table sorting, searching, pagination |
 | Flatpickr | Date pickers |
 
-## Installation
+## Installation Guide
 
-### Local (XAMPP)
+### Requirements
 
-1. Clone to `C:\xampp\htdocs\smart-inventory\`
-2. Import `database/schema.sql` and `database/schema_extended.sql` via phpMyAdmin
-3. Run `php database/seeder.php` to seed sample data
-4. Configure `config/database.php` if MySQL credentials differ
-5. Access `http://localhost/smart-inventory/`
+- PHP 8.0 or newer with PDO and PDO MySQL enabled
+- MySQL 5.7+ or MariaDB 10.4+
+- Apache with `mod_rewrite` enabled, or PHP's built-in development server
+- Composer, only if optional PHP packages are required by the deployment
+
+### Local installation with XAMPP
+
+1. Start Apache and MySQL from the XAMPP Control Panel.
+2. Clone or copy the project into `C:\xampp\htdocs\smart-inventory\`.
+3. Create a MySQL database named `smart_inventory`.
+4. Import `database/schema.sql`, followed by `database/schema_extended.sql`, using phpMyAdmin or the MySQL client.
+5. Edit `config/database.php` and set the database host, database name, username, and password.
+6. Seed the demo data:
+
+   ```bash
+   php database/seeder.php
+   ```
+
+7. Open `http://localhost/smart-inventory/` in a browser.
+8. Sign in with one of the demo accounts below and change demo credentials before production use.
+
+### PHP built-in development server
+
+From the project directory, run:
+
+```bash
+php -S localhost:8000
+```
+
+Then open `http://localhost:8000/`.
+
+### Production installation
+
+1. Upload the project files to the web server document root.
+2. Create an empty MySQL/MariaDB database and import both schema files in order.
+3. Configure `config/database.php` with production credentials.
+4. Ensure `uploads/` is writable by the web server because item and logo uploads are stored there.
+5. Disable PHP error display in `config/config.php` and enable application/server logging.
+6. Point the virtual host document root at the project directory and enable URL rewriting if using Apache.
+7. Remove or change the demo accounts and passwords before exposing the system publicly.
+
+### Database updates
+
+The current release does not require a new schema migration. Report Settings stores its value in the existing `system_settings` table using the unique key `report_prepared_by`. Existing installations can update the code and use the new Report Settings page directly.
 
 ### Rebuild Tailwind (if adding new classes)
 
