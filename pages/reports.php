@@ -138,10 +138,6 @@ if ($type === 'inventory') {
     </a>
 </div>
 
-<div class="hidden print:block text-base text-gray-700 mb-4" style="font-size:16px !important; font-weight:700 !important;">
-    Prepared by: <strong><?php echo h($reportPreparedBy); ?></strong>
-</div>
-
 <!-- Filter Form -->
 <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
     <form method="GET" action="index.php" class="flex flex-wrap items-end gap-3">
@@ -484,5 +480,9 @@ if ($type === 'inventory') {
             </tbody>
         </table>
         <?php endif; ?>
+    </div>
+
+    <div class="hidden print:block text-base text-gray-700 mt-6 pt-4" style="font-size:16px !important; font-weight:700 !important;">
+        Prepared by: <strong><?php echo h($reportPreparedBy); ?></strong>
     </div>
 </div>

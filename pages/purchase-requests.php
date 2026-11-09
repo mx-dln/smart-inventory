@@ -258,6 +258,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === 'view') {
 
 $categories = $pdo->query("SELECT id, category_name FROM categories WHERE status='Active' ORDER BY category_name")->fetchAll();
 $units = $pdo->query("SELECT id, unit_name, abbreviation FROM units ORDER BY unit_name")->fetchAll();
+$inventoryItems = $pdo->query("SELECT i.id, i.name, i.item_code, i.category_id, i.unit_id, i.unit_cost, i.current_stock, c.category_name, COALESCE(u.abbreviation, u.unit_name) as unit_name FROM inventory_items i LEFT JOIN categories c ON i.category_id = c.id LEFT JOIN units u ON i.unit_id = u.id WHERE i.status = 'Active' ORDER BY i.name ASC")->fetchAll();
 
 $statusFilter = $_GET['status'] ?? '';
 $searchFilter = $_GET['search'] ?? '';
@@ -566,26 +567,161 @@ $success = $_GET['success'] ?? ''; $error = $_GET['error'] ?? '';
 var itemRowIndex = 0;
 var categories = <?php echo json_encode($categories); ?>;
 var units = <?php echo json_encode($units); ?>;
+var inventoryItems = <?php echo json_encode($inventoryItems); ?>;
+var activeRowIdx = null;
+var activeSuggestIndex = -1;
+
+function getSuggestionsDropdown() {
+    var $dd = $('#itemSuggestionsDropdown');
+    if (!$dd.length) {
+        $dd = $('<div id="itemSuggestionsDropdown" style="position: fixed !important; z-index: 999999 !important;" class="hidden bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-2xl max-h-60 overflow-y-auto w-80 text-left"></div>');
+        $('body').append($dd);
+    }
+    return $dd;
+}
+
+function showItemSuggestions(inputEl) {
+    var $input = $(inputEl);
+    activeRowIdx = parseInt($input.data('row'), 10);
+    activeSuggestIndex = -1;
+    var query = ($input.val() || '').trim().toLowerCase();
+    var $dd = getSuggestionsDropdown();
+
+    var matches = [];
+    if (query === '') {
+        matches = inventoryItems.slice(0, 30);
+    } else {
+        matches = inventoryItems.filter(function(it) {
+            var name = (it.name || '').toLowerCase();
+            var code = (it.item_code || '').toLowerCase();
+            var cat = (it.category_name || '').toLowerCase();
+            return name.indexOf(query) !== -1 || code.indexOf(query) !== -1 || cat.indexOf(query) !== -1;
+        }).slice(0, 30);
+    }
+
+    if (matches.length === 0) {
+        $dd.html('<div class="p-3 text-xs text-gray-500 dark:text-gray-400 text-center"><i class="fas fa-info-circle mr-1"></i> No matching inventory item.<br><span class="text-gray-400 dark:text-gray-500">You can still type a custom item name.</span></div>');
+    } else {
+        var html = '<div class="px-2.5 py-1.5 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700 text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider flex justify-between items-center">';
+        html += '<span>Select Item</span>';
+        html += '<span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-normal">' + matches.length + ' item' + (matches.length > 1 ? 's' : '') + '</span>';
+        html += '</div>';
+
+        matches.forEach(function(it, sIdx) {
+            var costFmt = parseFloat(it.unit_cost || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            html += '<div class="suggestion-item px-3 py-2 border-b border-gray-50 dark:border-gray-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 cursor-pointer flex items-center justify-between gap-2 transition-colors" data-index="' + sIdx + '" data-item-id="' + it.id + '">';
+            html += '  <div class="min-w-0 flex-1">';
+            html += '    <div class="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">' + $('<div>').text(it.name).html() + '</div>';
+            html += '    <div class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1.5 mt-0.5">';
+            html += '      <span class="inline-block px-1.5 py-0.2 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 font-mono text-[11px] rounded font-semibold">' + $('<div>').text(it.item_code).html() + '</span>';
+            if (it.category_name) {
+                html += '      <span class="text-gray-400">•</span><span class="truncate">' + $('<div>').text(it.category_name).html() + '</span>';
+            }
+            html += '    </div>';
+            html += '  </div>';
+            html += '  <div class="text-right flex-shrink-0">';
+            html += '    <div class="text-xs font-bold text-emerald-600 dark:text-emerald-400">₱' + costFmt + '</div>';
+            if (it.unit_name) {
+                html += '    <div class="text-[10px] text-gray-400">/' + $('<div>').text(it.unit_name).html() + '</div>';
+            }
+            html += '  </div>';
+            html += '</div>';
+        });
+        $dd.html(html);
+    }
+
+    var rect = inputEl.getBoundingClientRect();
+    var ddWidth = Math.max(rect.width, 320);
+    var leftPos = rect.left;
+    if (leftPos + ddWidth > window.innerWidth - 10) {
+        leftPos = window.innerWidth - ddWidth - 10;
+    }
+    var topPos = rect.bottom + 2;
+    var spaceBelow = window.innerHeight - rect.bottom;
+    if (spaceBelow < 220 && rect.top > 220) {
+        topPos = rect.top - Math.min(240, matches.length * 52 + 35) - 2;
+    }
+    $dd.css({
+        position: 'fixed',
+        zIndex: 999999,
+        top: topPos + 'px',
+        left: leftPos + 'px',
+        width: ddWidth + 'px'
+    }).removeClass('hidden');
+}
+
+function selectItemForRow(rowIdx, item) {
+    var $row = $('#itemRow' + rowIdx);
+    if (!$row.length || !item) return;
+
+    $row.find('input[name="items[' + rowIdx + '][name]"]').val(item.name);
+    $row.find('input[name="items[' + rowIdx + '][code]"]').val(item.item_code || '');
+
+    if (item.category_id) {
+        $row.find('select[name="items[' + rowIdx + '][category_id]"]').val(item.category_id);
+    }
+    if (item.unit_id) {
+        $row.find('select[name="items[' + rowIdx + '][unit_id]"]').val(item.unit_id);
+    }
+    if (item.unit_cost !== undefined && item.unit_cost !== null) {
+        $row.find('input[name="items[' + rowIdx + '][cost]"]').val(parseFloat(item.unit_cost).toFixed(2));
+    }
+
+    var $qtyInput = $row.find('input[name="items[' + rowIdx + '][qty]"]');
+    if (!parseFloat($qtyInput.val())) {
+        $qtyInput.val(1);
+    }
+
+    calcRowTotal(rowIdx);
+    calcGrandTotal();
+    hideItemSuggestions();
+
+    setTimeout(function() {
+        $qtyInput.focus().select();
+    }, 50);
+}
+
+function hideItemSuggestions() {
+    $('#itemSuggestionsDropdown').addClass('hidden');
+    activeRowIdx = null;
+    activeSuggestIndex = -1;
+}
 
 function addItemRow(data) {
     var idx = itemRowIndex++;
-    var catOpts = '<option value="">Select</option>';
-    categories.forEach(function(c) { catOpts += '<option value="' + c.id + '">' + c.category_name + '</option>'; });
-    var unitOpts = '<option value="">Select</option>';
-    units.forEach(function(u) { unitOpts += '<option value="' + u.id + '">' + u.unit_name + '</option>'; });
+    var catOpts = '<option value="">Select Category</option>';
+    categories.forEach(function(c) {
+        var sel = (data && data.category_id == c.id) ? ' selected' : '';
+        catOpts += '<option value="' + c.id + '"' + sel + '>' + $('<div>').text(c.category_name).html() + '</option>';
+    });
+    var unitOpts = '<option value="">Select Unit</option>';
+    units.forEach(function(u) {
+        var sel = (data && data.unit_id == u.id) ? ' selected' : '';
+        unitOpts += '<option value="' + u.id + '"' + sel + '>' + $('<div>').text(u.unit_name + (u.abbreviation ? ' (' + u.abbreviation + ')' : '')).html() + '</option>';
+    });
+
+    var nameVal = data ? (data.item_name || '') : '';
+    var codeVal = data ? (data.item_code || '') : '';
+    var qtyVal = data ? (data.quantity_requested || 1) : 1;
+    var costVal = data ? (data.estimated_cost || 0) : 0;
 
     var html = '<tr id="itemRow' + idx + '" class="hover:bg-gray-50">';
-    html += '<td class="px-3 py-2"><input type="text" name="items[' + idx + '][name]" value="' + (data ? data.item_name||'' : '') + '" class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:ring-emerald-500 focus:border-emerald-500" placeholder="Item name" required></td>';
-    html += '<td class="px-3 py-2"><input type="text" name="items[' + idx + '][code]" value="' + (data ? data.item_code||'' : '') + '" class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:ring-emerald-500 focus:border-emerald-500" placeholder="Code"></td>';
-    html += '<td class="px-3 py-2"><select name="items[' + idx + '][category_id]" class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:ring-emerald-500 focus:border-emerald-500">' + catOpts + '</select></td>';
-    html += '<td class="px-3 py-2"><select name="items[' + idx + '][unit_id]" class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:ring-emerald-500 focus:border-emerald-500">' + unitOpts + '</select></td>';
-    html += '<td class="px-3 py-2"><input type="number" name="items[' + idx + '][qty]" step="0.01" min="0" value="' + (data ? data.quantity_requested||1 : 1) + '" class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:ring-emerald-500 focus:border-emerald-500 text-center" onchange="calcRowTotal(' + idx + ')" onkeyup="calcRowTotal(' + idx + ')"></td>';
-    html += '<td class="px-3 py-2"><input type="number" name="items[' + idx + '][cost]" step="0.01" min="0" value="' + (data ? data.estimated_cost||0 : 0) + '" class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:ring-emerald-500 focus:border-emerald-500 text-right" onchange="calcRowTotal(' + idx + ')" onkeyup="calcRowTotal(' + idx + ')"></td>';
+    html += '<td class="px-3 py-2">';
+    html += '  <div class="relative">';
+    html += '    <input type="text" name="items[' + idx + '][name]" value="' + $('<div>').text(nameVal).html() + '" class="item-name-input w-full border border-gray-300 rounded px-2.5 py-1.5 pr-7 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" placeholder="Search item name..." autocomplete="off" required data-row="' + idx + '">';
+    html += '    <span class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs"><i class="fas fa-search"></i></span>';
+    html += '  </div>';
+    html += '</td>';
+    html += '<td class="px-3 py-2"><input type="text" name="items[' + idx + '][code]" value="' + $('<div>').text(codeVal).html() + '" class="item-code-input w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 font-mono text-xs bg-gray-50" placeholder="Auto-filled" data-row="' + idx + '"></td>';
+    html += '<td class="px-3 py-2"><select name="items[' + idx + '][category_id]" class="item-category-select w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" data-row="' + idx + '">' + catOpts + '</select></td>';
+    html += '<td class="px-3 py-2"><select name="items[' + idx + '][unit_id]" class="item-unit-select w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" data-row="' + idx + '">' + unitOpts + '</select></td>';
+    html += '<td class="px-3 py-2"><input type="number" name="items[' + idx + '][qty]" step="0.01" min="0.01" value="' + qtyVal + '" class="item-qty-input w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-center" onchange="calcRowTotal(' + idx + ')" onkeyup="calcRowTotal(' + idx + ')" data-row="' + idx + '"></td>';
+    html += '<td class="px-3 py-2"><input type="number" name="items[' + idx + '][cost]" step="0.01" min="0" value="' + costVal + '" class="item-cost-input w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-right" onchange="calcRowTotal(' + idx + ')" onkeyup="calcRowTotal(' + idx + ')" data-row="' + idx + '"></td>';
     html += '<td class="px-3 py-2 text-right font-medium text-gray-800" id="rowTotal' + idx + '">₱0.00</td>';
-    html += '<td class="px-3 py-2 text-center"><button type="button" onclick="removeItemRow(' + idx + ')" class="text-red-400 hover:text-red-600 transition-colors"><i class="fas fa-trash-alt"></i></button></td>';
+    html += '<td class="px-3 py-2 text-center"><button type="button" onclick="removeItemRow(' + idx + ')" class="text-red-400 hover:text-red-600 transition-colors p-1" title="Remove item"><i class="fas fa-trash-alt"></i></button></td>';
     html += '</tr>';
     $('#itemsBody').append(html);
-    if (data) calcRowTotal(idx);
+    calcRowTotal(idx);
     calcGrandTotal();
 }
 
@@ -622,6 +758,7 @@ function openCreateModal() {
 
 function closeCreateModal() {
     $('#createModal').addClass('hidden');
+    hideItemSuggestions();
 }
 
 function viewPR(id) {
@@ -691,8 +828,106 @@ function closeModal() {
     closeRejectModal();
 }
 
+// Autocomplete events on item name
+$(document).on('focus input', '.item-name-input', function() {
+    showItemSuggestions(this);
+});
+
+$(document).on('keydown', '.item-name-input', function(e) {
+    var $dd = $('#itemSuggestionsDropdown');
+    if ($dd.hasClass('hidden')) {
+        if (e.key === 'ArrowDown') {
+            showItemSuggestions(this);
+            e.preventDefault();
+        }
+        return;
+    }
+
+    var $items = $dd.find('.suggestion-item');
+    if (!$items.length) return;
+
+    if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        activeSuggestIndex = (activeSuggestIndex + 1) % $items.length;
+        $items.removeClass('bg-emerald-100 dark:bg-emerald-900/50');
+        var $active = $items.eq(activeSuggestIndex).addClass('bg-emerald-100 dark:bg-emerald-900/50');
+        if ($active[0]) $active[0].scrollIntoView({ block: 'nearest' });
+    } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        activeSuggestIndex = (activeSuggestIndex - 1 + $items.length) % $items.length;
+        $items.removeClass('bg-emerald-100 dark:bg-emerald-900/50');
+        var $active = $items.eq(activeSuggestIndex).addClass('bg-emerald-100 dark:bg-emerald-900/50');
+        if ($active[0]) $active[0].scrollIntoView({ block: 'nearest' });
+    } else if (e.key === 'Enter') {
+        if (activeSuggestIndex >= 0 && activeSuggestIndex < $items.length) {
+            e.preventDefault();
+            var itemId = $items.eq(activeSuggestIndex).data('item-id');
+            var item = inventoryItems.find(function(it) { return it.id == itemId; });
+            if (item && activeRowIdx !== null) {
+                selectItemForRow(activeRowIdx, item);
+            }
+        }
+    } else if (e.key === 'Escape') {
+        hideItemSuggestions();
+    }
+});
+
+// Click selection on suggestions
+$(document).on('mousedown', '.suggestion-item', function(e) {
+    e.preventDefault();
+    var itemId = $(this).data('item-id');
+    var item = inventoryItems.find(function(it) { return it.id == itemId; });
+    if (item && activeRowIdx !== null) {
+        selectItemForRow(activeRowIdx, item);
+    }
+});
+
+// Exact match on blur/change
+$(document).on('change', '.item-name-input', function() {
+    var name = $(this).val().trim().toLowerCase();
+    if (!name) return;
+    var rowIdx = parseInt($(this).data('row'), 10);
+    var found = inventoryItems.find(function(it) {
+        return it.name && it.name.toLowerCase() === name;
+    });
+    if (found) {
+        selectItemForRow(rowIdx, found);
+    }
+});
+
+// Reactive lookup when typing in Item Code
+$(document).on('change blur', '.item-code-input', function() {
+    var code = $(this).val().trim().toUpperCase();
+    if (!code) return;
+    var rowIdx = parseInt($(this).data('row'), 10);
+    var found = inventoryItems.find(function(it) {
+        return it.item_code && it.item_code.toUpperCase() === code;
+    });
+    if (found) {
+        selectItemForRow(rowIdx, found);
+    }
+});
+
+// Hide dropdown on click outside or scroll
+$(document).on('mousedown', function(e) {
+    if (!$(e.target).closest('#itemSuggestionsDropdown, .item-name-input').length) {
+        hideItemSuggestions();
+    }
+});
+
+window.addEventListener('scroll', function() {
+    hideItemSuggestions();
+}, true);
+
+window.addEventListener('resize', function() {
+    hideItemSuggestions();
+});
+
 $(document).on('keydown', function(e) {
-    if (e.key === 'Escape') closeModal();
+    if (e.key === 'Escape') {
+        hideItemSuggestions();
+        closeModal();
+    }
 });
 </script>
 

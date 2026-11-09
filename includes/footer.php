@@ -28,6 +28,16 @@
     </div>
 </div>
 
+<?php
+if (!isset($reportPreparedBy) && isset($pdo)) {
+    try {
+        $prepStmt = $pdo->prepare("SELECT setting_value FROM system_settings WHERE setting_key = 'report_prepared_by' LIMIT 1");
+        $prepStmt->execute();
+        $savedPreparedBy = $prepStmt->fetchColumn();
+        if ($savedPreparedBy) $reportPreparedBy = $savedPreparedBy;
+    } catch (\Throwable $e) {}
+}
+?>
 <script>
 var csrfToken = '<?php echo $_SESSION['csrf_token']; ?>';
 var currentUserName = '<?php echo h($_SESSION['full_name'] ?? $_SESSION['username']); ?>';

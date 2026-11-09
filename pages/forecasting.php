@@ -1,5 +1,10 @@
 <?php
 $page = 'forecasting';
+$reportPreparedBy = $_SESSION['full_name'] ?? $_SESSION['username'] ?? 'System User';
+$prepStmt = $pdo->prepare("SELECT setting_value FROM system_settings WHERE setting_key = 'report_prepared_by' LIMIT 1");
+$prepStmt->execute();
+$savedPreparedBy = $prepStmt->fetchColumn();
+if ($savedPreparedBy) $reportPreparedBy = $savedPreparedBy;
 
 $items = $pdo->query("SELECT i.id, i.name, i.item_code, i.min_stock, i.max_stock, i.current_stock, i.unit_cost, COALESCE(u.abbreviation, u.unit_name) as unit FROM inventory_items i LEFT JOIN units u ON i.unit_id=u.id WHERE i.status='Active' ORDER BY i.name")->fetchAll();
 
@@ -113,12 +118,6 @@ if ($selectedItemId > 0 && $_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['
     </button>
     <?php endif; ?>
 </div>
-
-<?php if ($forecast !== null): ?>
-<div class="hidden print:block text-base text-gray-700 mb-4" style="font-size:16px !important; font-weight:700 !important;">
-    Prepared by: <strong><?php echo h($_SESSION['full_name'] ?? $_SESSION['username'] ?? 'System User'); ?></strong>
-</div>
-<?php endif; ?>
 
 <?php if (!empty($errors)): ?>
 <?php foreach ($errors as $err): ?>
@@ -299,6 +298,12 @@ if ($selectedItemId > 0 && $_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['
         </div>
     </div>
 </div>
+
+<?php if ($forecast !== null): ?>
+<div class="hidden print:block text-base text-gray-700 mt-6 pt-4" style="font-size:16px !important; font-weight:700 !important;">
+    Prepared by: <strong><?php echo h($reportPreparedBy ?? ($_SESSION['full_name'] ?? $_SESSION['username'] ?? 'System User')); ?></strong>
+</div>
+<?php endif; ?>
 
 <script>
 function toggleForecastInfo() {

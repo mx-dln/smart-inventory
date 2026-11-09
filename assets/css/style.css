@@ -1,4 +1,9 @@
 /* Smart Inventory System - Custom Styles */
+#itemSuggestionsDropdown {
+    position: fixed !important;
+    z-index: 999999 !important;
+}
+
 :root {
     --sidebar-width: 16rem;
 }
