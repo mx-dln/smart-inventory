@@ -300,7 +300,7 @@ if ($selectedItemId > 0 && $_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['
 </div>
 
 <?php if ($forecast !== null): ?>
-<div class="hidden print:block text-base text-gray-700 mt-6 pt-4" style="font-size:16px !important; font-weight:700 !important;">
+<div class="hidden print:block text-base text-gray-700 mt-16 pt-6" style="font-size:16px !important; font-weight:700 !important; margin-top: 65px !important;">
     Prepared by: <strong><?php echo h($reportPreparedBy ?? ($_SESSION['full_name'] ?? $_SESSION['username'] ?? 'System User')); ?></strong>
 </div>
 <?php endif; ?>

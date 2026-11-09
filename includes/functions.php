@@ -132,28 +132,125 @@ function getLowStockItems($pdo) {
 }
 
 function getExpiredItems($pdo) {
-    $stmt = $pdo->prepare("SELECT i.*, c.category_name, u.unit_name 
+    $stmt = $pdo->prepare("SELECT DISTINCT 
+                               i.id,
+                               i.item_code,
+                               i.name,
+                               i.description,
+                               i.category_id,
+                               i.unit_id,
+                               i.current_stock,
+                               i.min_stock,
+                               i.max_stock,
+                               i.unit_cost,
+                               i.supplier_id,
+                               i.storage_location,
+                               i.image,
+                               i.status,
+                               i.created_at,
+                               i.updated_at,
+                               c.category_name, 
+                               u.unit_name,
+                               COALESCE(
+                                   (SELECT MIN(b.expiration_date) FROM batches b 
+                                    WHERE b.item_id = i.id 
+                                      AND b.expiration_date IS NOT NULL 
+                                      AND b.expiration_date < CURDATE() 
+                                      AND b.remaining_quantity > 0 
+                                      AND b.status IN ('Active', 'Expired')),
+                                   i.expiration_date
+                               ) AS expiration_date,
+                               (SELECT b.batch_number FROM batches b 
+                                WHERE b.item_id = i.id 
+                                  AND b.expiration_date IS NOT NULL 
+                                  AND b.expiration_date < CURDATE() 
+                                  AND b.remaining_quantity > 0 
+                                  AND b.status IN ('Active', 'Expired') 
+                                ORDER BY b.expiration_date ASC LIMIT 1) AS expired_batch_number
                            FROM inventory_items i 
                            LEFT JOIN categories c ON i.category_id = c.id 
                            LEFT JOIN units u ON i.unit_id = u.id 
-                           WHERE i.expiration_date IS NOT NULL 
-                           AND i.expiration_date < CURDATE() 
-                           AND i.status = 'Active'");
+                           WHERE (
+                               (i.expiration_date IS NOT NULL AND i.expiration_date < CURDATE())
+                               OR EXISTS (
+                                   SELECT 1 FROM batches b 
+                                   WHERE b.item_id = i.id 
+                                     AND b.expiration_date IS NOT NULL 
+                                     AND b.expiration_date < CURDATE() 
+                                     AND b.remaining_quantity > 0 
+                                     AND b.status IN ('Active', 'Expired')
+                               )
+                           )
+                           ORDER BY expiration_date ASC");
     $stmt->execute();
     return $stmt->fetchAll();
 }
 
 function getNearExpiryItems($pdo, $days = 30) {
-    $stmt = $pdo->prepare("SELECT i.*, c.category_name, u.unit_name, 
-                           DATEDIFF(i.expiration_date, CURDATE()) as days_remaining
+    $days = (int)$days;
+    $stmt = $pdo->prepare("SELECT DISTINCT 
+                               i.id,
+                               i.item_code,
+                               i.name,
+                               i.description,
+                               i.category_id,
+                               i.unit_id,
+                               i.current_stock,
+                               i.min_stock,
+                               i.max_stock,
+                               i.unit_cost,
+                               i.supplier_id,
+                               i.storage_location,
+                               i.image,
+                               i.status,
+                               i.created_at,
+                               i.updated_at,
+                               c.category_name, 
+                               u.unit_name,
+                               COALESCE(
+                                   (SELECT MIN(b.expiration_date) FROM batches b 
+                                    WHERE b.item_id = i.id 
+                                      AND b.expiration_date IS NOT NULL 
+                                      AND b.expiration_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL :d1 DAY)
+                                      AND b.remaining_quantity > 0 
+                                      AND b.status = 'Active'),
+                                   i.expiration_date
+                               ) AS expiration_date,
+                               DATEDIFF(
+                                   COALESCE(
+                                       (SELECT MIN(b.expiration_date) FROM batches b 
+                                        WHERE b.item_id = i.id 
+                                          AND b.expiration_date IS NOT NULL 
+                                          AND b.expiration_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL :d2 DAY)
+                                          AND b.remaining_quantity > 0 
+                                          AND b.status = 'Active'),
+                                       i.expiration_date
+                                   ),
+                                   CURDATE()
+                               ) as days_remaining,
+                               (SELECT b.batch_number FROM batches b 
+                                WHERE b.item_id = i.id 
+                                  AND b.expiration_date IS NOT NULL 
+                                  AND b.expiration_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL :d3 DAY)
+                                  AND b.remaining_quantity > 0 
+                                  AND b.status = 'Active' 
+                                ORDER BY b.expiration_date ASC LIMIT 1) AS near_batch_number
                            FROM inventory_items i 
                            LEFT JOIN categories c ON i.category_id = c.id 
                            LEFT JOIN units u ON i.unit_id = u.id 
-                           WHERE i.expiration_date IS NOT NULL 
-                           AND i.expiration_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL ? DAY)
-                           AND i.status = 'Active'
-                           ORDER BY i.expiration_date ASC");
-    $stmt->execute([$days]);
+                           WHERE (
+                               (i.expiration_date IS NOT NULL AND i.expiration_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL :d4 DAY))
+                               OR EXISTS (
+                                   SELECT 1 FROM batches b 
+                                   WHERE b.item_id = i.id 
+                                     AND b.expiration_date IS NOT NULL 
+                                     AND b.expiration_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL :d5 DAY)
+                                     AND b.remaining_quantity > 0 
+                                     AND b.status = 'Active'
+                               )
+                           )
+                           ORDER BY expiration_date ASC");
+    $stmt->execute([':d1' => $days, ':d2' => $days, ':d3' => $days, ':d4' => $days, ':d5' => $days]);
     return $stmt->fetchAll();
 }
 
@@ -161,27 +258,39 @@ function getDashboardStats($pdo) {
     $stats = [];
     
     $stmt = $pdo->query("SELECT COALESCE(SUM(current_stock), 0) FROM inventory_items i JOIN categories c ON i.category_id = c.id WHERE c.category_type = 'Raw Materials' AND i.status = 'Active'");
-    $stats['raw_materials'] = $stmt->fetchColumn();
+    $stats['raw_materials'] = (float)$stmt->fetchColumn();
     
     $stmt = $pdo->query("SELECT COALESCE(SUM(current_stock), 0) FROM inventory_items i JOIN categories c ON i.category_id = c.id WHERE c.category_type = 'Production Supplies' AND i.status = 'Active'");
-    $stats['production_supplies'] = $stmt->fetchColumn();
+    $stats['production_supplies'] = (float)$stmt->fetchColumn();
     
     $stmt = $pdo->query("SELECT COUNT(*) FROM inventory_items WHERE current_stock <= min_stock AND status = 'Active'");
-    $stats['low_stock'] = $stmt->fetchColumn();
+    $stats['low_stock'] = (int)$stmt->fetchColumn();
     
-    $stmt = $pdo->query("SELECT COUNT(*) FROM inventory_items WHERE expiration_date IS NOT NULL AND expiration_date < CURDATE() AND status = 'Active'");
-    $stats['expired'] = $stmt->fetchColumn();
+    $stmt = $pdo->query("SELECT COUNT(DISTINCT i.id) 
+                         FROM inventory_items i 
+                         WHERE (
+                             (i.expiration_date IS NOT NULL AND i.expiration_date < CURDATE())
+                             OR EXISTS (
+                                 SELECT 1 FROM batches b 
+                                 WHERE b.item_id = i.id 
+                                   AND b.expiration_date IS NOT NULL 
+                                   AND b.expiration_date < CURDATE() 
+                                   AND b.remaining_quantity > 0 
+                                   AND b.status IN ('Active', 'Expired')
+                             )
+                         )");
+    $stats['expired'] = (int)$stmt->fetchColumn();
     
     $today = date('Y-m-d');
     $stmt = $pdo->prepare("SELECT COUNT(*) FROM inventory_transactions WHERE DATE(created_at) = ?");
     $stmt->execute([$today]);
-    $stats['today_transactions'] = $stmt->fetchColumn();
+    $stats['today_transactions'] = (int)$stmt->fetchColumn();
     
     $stmt = $pdo->query("SELECT COUNT(*) FROM suppliers WHERE status = 'Active'");
-    $stats['suppliers'] = $stmt->fetchColumn();
+    $stats['suppliers'] = (int)$stmt->fetchColumn();
     
     $stmt = $pdo->query("SELECT COALESCE(SUM(current_stock * unit_cost), 0) FROM inventory_items WHERE status = 'Active'");
-    $stats['total_value'] = $stmt->fetchColumn();
+    $stats['total_value'] = (float)$stmt->fetchColumn();
     
     return $stats;
 }

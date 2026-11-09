@@ -132,7 +132,7 @@ function printPage(tableId, title) {
     win.document.write('.report-header h1 { font-size: 18px; color: #0f766e; }');
     win.document.write('.report-header p { font-size: 11px; color: #666; }');
     win.document.write('.report-meta { font-size: 10px; color: #666; margin-bottom: 10px; }');
-    win.document.write('.report-prepared { margin-top: 24px; margin-bottom: 12px; font-size: 12px; color: #333; page-break-inside: avoid; }');
+    win.document.write('.report-prepared { margin-top: 65px; margin-bottom: 12px; font-size: 12px; color: #333; page-break-inside: avoid; }');
     win.document.write('.report-prepared strong { font-size: 13px; font-weight: 700; color: #111; }');
     win.document.write('table { width: 100%; border-collapse: collapse; margin-top: 8px; }');
     win.document.write('th { background: #059669; color: #fff; text-align: left; padding: 6px 8px; font-size: 10px; text-transform: uppercase; }');

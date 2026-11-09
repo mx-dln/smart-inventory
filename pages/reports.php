@@ -399,7 +399,7 @@ if ($type === 'inventory') {
                 <?php foreach ($expiredItems as $r): ?>
                 <tr class="text-sm text-gray-700 hover:bg-gray-50">
                     <td class="px-4 py-3 font-mono text-xs"><?php echo h($r['item_code']); ?></td>
-                    <td class="px-4 py-3 font-medium"><?php echo h($r['name']); ?></td>
+                    <td class="px-4 py-3 font-medium"><?php echo h($r['name']); ?><?php if (!empty($r['expired_batch_number'])): ?> <span class="text-xs text-red-500 font-mono">(Batch: <?php echo h($r['expired_batch_number']); ?>)</span><?php endif; ?></td>
                     <td class="px-4 py-3"><?php echo h($r['category_name'] ?? 'N/A'); ?></td>
                     <td class="px-4 py-3"><?php echo formatDate($r['expiration_date']); ?></td>
                     <td class="px-4 py-3"><span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">Expired</span></td>
@@ -429,7 +429,7 @@ if ($type === 'inventory') {
                 <?php foreach ($nearExpiryItems as $r): ?>
                 <tr class="text-sm text-gray-700 hover:bg-gray-50">
                     <td class="px-4 py-3 font-mono text-xs"><?php echo h($r['item_code']); ?></td>
-                    <td class="px-4 py-3 font-medium"><?php echo h($r['name']); ?></td>
+                    <td class="px-4 py-3 font-medium"><?php echo h($r['name']); ?><?php if (!empty($r['near_batch_number'])): ?> <span class="text-xs text-yellow-600 font-mono">(Batch: <?php echo h($r['near_batch_number']); ?>)</span><?php endif; ?></td>
                     <td class="px-4 py-3"><?php echo h($r['category_name'] ?? 'N/A'); ?></td>
                     <td class="px-4 py-3"><?php echo formatDate($r['expiration_date']); ?></td>
                     <td class="px-4 py-3"><span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800"><?php echo $r['days_remaining']; ?> days</span></td>
@@ -482,7 +482,7 @@ if ($type === 'inventory') {
         <?php endif; ?>
     </div>
 
-    <div class="hidden print:block text-base text-gray-700 mt-6 pt-4" style="font-size:16px !important; font-weight:700 !important;">
+    <div class="hidden print:block text-base text-gray-700 mt-16 pt-6" style="font-size:16px !important; font-weight:700 !important; margin-top: 65px !important;">
         Prepared by: <strong><?php echo h($reportPreparedBy); ?></strong>
     </div>
 </div>

@@ -100,7 +100,7 @@ $topUsed = $topUsedStmt->fetchAll();
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm text-gray-500 font-medium">Raw Materials</p>
-                <p class="text-2xl font-bold text-gray-800 mt-1 stat-value" data-target="<?php echo $stats['raw_materials']; ?>">0</p>
+                <p class="text-2xl font-bold text-gray-800 mt-1 stat-value" data-target="<?php echo $stats['raw_materials']; ?>"><?php echo number_format($stats['raw_materials'], 2); ?></p>
             </div>
             <div class="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
                 <i class="fas fa-seedling text-emerald-600 text-xl"></i>
@@ -114,7 +114,7 @@ $topUsed = $topUsedStmt->fetchAll();
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm text-gray-500 font-medium">Production Supplies</p>
-                <p class="text-2xl font-bold text-gray-800 mt-1 stat-value" data-target="<?php echo $stats['production_supplies']; ?>">0</p>
+                <p class="text-2xl font-bold text-gray-800 mt-1 stat-value" data-target="<?php echo $stats['production_supplies']; ?>"><?php echo number_format($stats['production_supplies'], 2); ?></p>
             </div>
             <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                 <i class="fas fa-boxes text-blue-600 text-xl"></i>
@@ -128,7 +128,7 @@ $topUsed = $topUsedStmt->fetchAll();
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm text-gray-500 font-medium">Low Stock Items</p>
-                <p class="text-2xl font-bold text-gray-800 mt-1 stat-value" data-target="<?php echo $stats['low_stock']; ?>">0</p>
+                <p class="text-2xl font-bold text-gray-800 mt-1 stat-value" data-target="<?php echo $stats['low_stock']; ?>"><?php echo number_format($stats['low_stock']); ?></p>
             </div>
             <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
                 <i class="fas fa-exclamation-triangle text-orange-600 text-xl"></i>
@@ -142,7 +142,7 @@ $topUsed = $topUsedStmt->fetchAll();
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm text-gray-500 font-medium">Expired Items</p>
-                <p class="text-2xl font-bold text-gray-800 mt-1 stat-value" data-target="<?php echo $stats['expired']; ?>">0</p>
+                <p class="text-2xl font-bold text-gray-800 mt-1 stat-value" data-target="<?php echo $stats['expired']; ?>"><?php echo number_format($stats['expired']); ?></p>
             </div>
             <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
                 <i class="fas fa-clock text-red-600 text-xl"></i>
@@ -156,7 +156,7 @@ $topUsed = $topUsedStmt->fetchAll();
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm text-gray-500 font-medium">Today's Transactions</p>
-                <p class="text-2xl font-bold text-gray-800 mt-1 stat-value" data-target="<?php echo $stats['today_transactions']; ?>">0</p>
+                <p class="text-2xl font-bold text-gray-800 mt-1 stat-value" data-target="<?php echo $stats['today_transactions']; ?>"><?php echo number_format($stats['today_transactions']); ?></p>
             </div>
             <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
                 <i class="fas fa-exchange-alt text-indigo-600 text-xl"></i>
@@ -170,7 +170,7 @@ $topUsed = $topUsedStmt->fetchAll();
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm text-gray-500 font-medium">Incoming Total</p>
-                <p class="text-2xl font-bold text-gray-800 mt-1 stat-value" data-target="<?php echo $stats['today_incoming'] ?? 0; ?>">0</p>
+                <p class="text-2xl font-bold text-gray-800 mt-1 stat-value" data-target="<?php echo $stats['today_incoming'] ?? 0; ?>"><?php echo number_format($stats['today_incoming'] ?? 0, 2); ?></p>
             </div>
             <div class="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
                 <i class="fas fa-arrow-down text-emerald-600 text-xl"></i>
@@ -184,7 +184,7 @@ $topUsed = $topUsedStmt->fetchAll();
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm text-gray-500 font-medium">Outgoing Total</p>
-                <p class="text-2xl font-bold text-gray-800 mt-1 stat-value" data-target="<?php echo $stats['today_outgoing'] ?? 0; ?>">0</p>
+                <p class="text-2xl font-bold text-gray-800 mt-1 stat-value" data-target="<?php echo $stats['today_outgoing'] ?? 0; ?>"><?php echo number_format($stats['today_outgoing'] ?? 0, 2); ?></p>
             </div>
             <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
                 <i class="fas fa-arrow-up text-red-600 text-xl"></i>
@@ -198,7 +198,7 @@ $topUsed = $topUsedStmt->fetchAll();
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm text-gray-500 font-medium">Active Suppliers</p>
-                <p class="text-2xl font-bold text-gray-800 mt-1 stat-value" data-target="<?php echo $stats['suppliers']; ?>">0</p>
+                <p class="text-2xl font-bold text-gray-800 mt-1 stat-value" data-target="<?php echo $stats['suppliers']; ?>"><?php echo number_format($stats['suppliers']); ?></p>
             </div>
             <div class="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center">
                 <i class="fas fa-truck text-teal-600 text-xl"></i>
@@ -261,7 +261,7 @@ $topUsed = $topUsedStmt->fetchAll();
             <?php foreach ($lowStockItems as $item): ?>
             <div class="flex items-center justify-between p-3 bg-orange-50 rounded-lg">
                 <div>
-                    <p class="text-sm font-medium text-gray-800"><?php echo h($item['name']); ?></p>
+                    <p class="text-sm font-medium text-gray-800"><?php echo h($item['name']); ?><?php if (!empty($item['expired_batch_number'])): ?> <span class="text-xs text-red-500 font-mono">(Batch: <?php echo h($item['expired_batch_number']); ?>)</span><?php endif; ?></p>
                     <p class="text-xs text-gray-500">Stock: <?php echo formatNumber($item['current_stock']); ?> <?php echo h($item['unit_name'] ?? ''); ?> (Min: <?php echo formatNumber($item['min_stock']); ?>)</p>
                 </div>
                 <a href="index?page=inventory&view=<?php echo $item['id']; ?>" class="text-xs text-emerald-600 hover:text-emerald-700 font-medium">View</a>
@@ -287,7 +287,7 @@ $topUsed = $topUsedStmt->fetchAll();
         <?php if (count($expiredItems) > 0): $firstExpired = reset($expiredItems); ?>
         <div class="p-3 bg-red-50 rounded-lg mb-2 flex items-center justify-between">
             <div class="min-w-0">
-                <p class="text-sm font-medium text-gray-800 truncate"><?php echo h($firstExpired['name']); ?></p>
+                <p class="text-sm font-medium text-gray-800 truncate"><?php echo h($firstExpired['name']); ?><?php if (!empty($firstExpired['expired_batch_number'])): ?> <span class="text-xs text-red-500 font-mono">(Batch: <?php echo h($firstExpired['expired_batch_number']); ?>)</span><?php endif; ?></p>
                 <p class="text-xs text-red-600">Expired: <?php echo formatDate($firstExpired['expiration_date']); ?></p>
             </div>
             <a href="index?page=inventory&view=<?php echo $firstExpired['id']; ?>" class="text-xs text-emerald-600 hover:text-emerald-700 font-medium shrink-0 ml-2">View</a>
@@ -297,7 +297,7 @@ $topUsed = $topUsedStmt->fetchAll();
         <?php if (count($nearExpiryItems) > 0): $firstNear = reset($nearExpiryItems); ?>
         <div class="p-3 bg-yellow-50 rounded-lg mb-2 flex items-center justify-between">
             <div class="min-w-0">
-                <p class="text-sm font-medium text-gray-800 truncate"><?php echo h($firstNear['name']); ?></p>
+                <p class="text-sm font-medium text-gray-800 truncate"><?php echo h($firstNear['name']); ?><?php if (!empty($firstNear['near_batch_number'])): ?> <span class="text-xs text-yellow-600 font-mono">(Batch: <?php echo h($firstNear['near_batch_number']); ?>)</span><?php endif; ?></p>
                 <p class="text-xs text-yellow-600"><?php echo $firstNear['days_remaining']; ?> days remaining</p>
             </div>
             <a href="index?page=inventory&view=<?php echo $firstNear['id']; ?>" class="text-xs text-emerald-600 hover:text-emerald-700 font-medium shrink-0 ml-2">View</a>
@@ -328,7 +328,7 @@ $topUsed = $topUsedStmt->fetchAll();
                     <?php foreach ($expiredItems as $item): ?>
                     <a href="index?page=inventory&view=<?php echo $item['id']; ?>" class="flex items-center justify-between p-3 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
                         <div>
-                            <p class="text-sm font-medium text-gray-800"><?php echo h($item['name']); ?></p>
+                            <p class="text-sm font-medium text-gray-800"><?php echo h($item['name']); ?><?php if (!empty($item['near_batch_number'])): ?> <span class="text-xs text-yellow-600 font-mono">(Batch: <?php echo h($item['near_batch_number']); ?>)</span><?php endif; ?></p>
                             <p class="text-xs text-red-600">Expired: <?php echo formatDate($item['expiration_date']); ?></p>
                         </div>
                         <i class="fas fa-chevron-right text-red-400 text-xs"></i>
@@ -429,19 +429,23 @@ var chartTextColor = isDark ? '#e2e8f0' : '#475569';
 var chartGridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)';
 
 // Animated counter for stat cards
-document.addEventListener('DOMContentLoaded', function() {
+function animateStatCounters() {
     const counters = document.querySelectorAll('.stat-value');
-    const speed = 50;
+    const speed = 35;
 
     counters.forEach(counter => {
-        const updateCount = () => {
-            const target = parseFloat(counter.getAttribute('data-target'));
-            const count = parseFloat(counter.innerText.replace(/,/g, ''));
-            const increment = Math.max(1, target / 50);
+        const target = parseFloat(counter.getAttribute('data-target')) || 0;
+        if (target === 0) {
+            counter.innerText = '0';
+            return;
+        }
+        let current = 0;
+        const increment = Math.max(1, target / 30);
 
-            if (count < target) {
-                const newCount = Math.min(count + increment, target);
-                counter.innerText = Number.isInteger(target) ? Math.floor(newCount) : newCount.toFixed(2);
+        const updateCount = () => {
+            current = Math.min(current + increment, target);
+            counter.innerText = target % 1 === 0 ? Math.floor(current).toLocaleString() : current.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            if (current < target) {
                 setTimeout(updateCount, speed);
             } else {
                 counter.innerText = target % 1 === 0 ? target.toLocaleString() : target.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -449,7 +453,13 @@ document.addEventListener('DOMContentLoaded', function() {
         };
         updateCount();
     });
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', animateStatCounters);
+} else {
+    animateStatCounters();
+}
 
 // Monthly Chart
 const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');

@@ -28,7 +28,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
     
     if ($action === 'add' || $action === 'edit') {
-        $id = $_POST['id'] ?? null;
+        try {
+            $id = $_POST['id'] ?? null;
         $itemCode = trim($_POST['item_code'] ?? '');
         $name = trim($_POST['name'] ?? '');
         $description = trim($_POST['description'] ?? '');
@@ -79,6 +80,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             logAudit($pdo, 'Update', 'Inventory', 'Updated item: ' . $name);
             respond(true, 'Item updated successfully');
+        }
+        } catch (Exception $e) {
+            respond(false, 'Error: ' . $e->getMessage());
         }
     }
 
@@ -732,7 +736,12 @@ $(document).on('submit', '#itemForm', function(e) {
         data: formData,
         processData: false,
         contentType: false,
-        success: function() {
+        success: function(res) {
+            if (res && typeof res === 'object' && res.success === false) {
+                hideLoading();
+                showToast(res.message || 'Operation failed', 'error');
+                return;
+            }
             // Reload only the table section via AJAX
             $.get(window.location.href, function(html) {
                 var newTable = $(html).find('.table-container').html();

@@ -30,8 +30,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $pdo->prepare("INSERT INTO batch_movements (batch_id, movement_type, quantity, reference_type, previous_remaining, new_remaining, remarks, created_by) VALUES (?, 'In', ?, 'Initial', 0, ?, 'Batch created', ?)");
             $stmt->execute([$batchId, $quantity, $remaining, $userId]);
 
-            $stmt = $pdo->prepare("UPDATE inventory_items SET current_stock = current_stock + ? WHERE id = ?");
-            $stmt->execute([$quantity, $itemId]);
+            // Get previous stock for transaction logging
+            $stmt = $pdo->prepare("SELECT current_stock FROM inventory_items WHERE id = ?");
+            $stmt->execute([$itemId]);
+            $prevStock = (float)$stmt->fetchColumn();
+            $newStock = $prevStock + $quantity;
+
+            // Update item stock and sync earliest expiration date
+            $stmt = $pdo->prepare("UPDATE inventory_items SET current_stock = ?, expiration_date = COALESCE((SELECT MIN(expiration_date) FROM batches WHERE item_id = ? AND expiration_date IS NOT NULL AND remaining_quantity > 0 AND status IN ('Active', 'Expired')), expiration_date) WHERE id = ?");
+            $stmt->execute([$newStock, $itemId, $itemId]);
+
+            // Record transaction for dashboard metrics & history
+            $stmt = $pdo->prepare("INSERT INTO inventory_transactions (item_id, transaction_type, reference_type, reference_id, quantity, previous_stock, new_stock, unit_cost, total_value, remarks, created_by) VALUES (?, 'Stock In', 'Batch', ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$itemId, $batchId, $quantity, $prevStock, $newStock, $unitCost, $quantity * $unitCost, 'Batch created: ' . $batchNumber, $userId]);
 
             logAudit($pdo, 'Insert', 'Batches', 'Created batch: ' . $batchNumber);
             echo '<script>window.location.href="index?page=batches&success=' . urlencode('Batch created successfully') . '";</script>'; exit;
@@ -51,6 +62,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
 
+            // Sync earliest active expiration date on edit
+            $stmt = $pdo->prepare("UPDATE inventory_items SET expiration_date = COALESCE((SELECT MIN(expiration_date) FROM batches WHERE item_id = ? AND expiration_date IS NOT NULL AND remaining_quantity > 0 AND status IN ('Active', 'Expired')), expiration_date) WHERE id = ?");
+            $stmt->execute([$itemId, $itemId]);
+
             logAudit($pdo, 'Update', 'Batches', 'Updated batch: ' . $batchNumber);
             echo '<script>window.location.href="index?page=batches&success=' . urlencode('Batch updated successfully') . '";</script>'; exit;
         }
@@ -66,8 +81,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute([$id]);
             $stmt = $pdo->prepare("DELETE FROM batches WHERE id = ?");
             $stmt->execute([$id]);
-            $stmt = $pdo->prepare("UPDATE inventory_items SET current_stock = current_stock - ? WHERE id = ?");
-            $stmt->execute([$batch['quantity'], $batch['item_id']]);
+
+            // Re-sync item stock and expiration date after deletion
+            $stmt = $pdo->prepare("UPDATE inventory_items SET current_stock = current_stock - ?, expiration_date = (SELECT MIN(expiration_date) FROM batches WHERE item_id = ? AND expiration_date IS NOT NULL AND remaining_quantity > 0 AND status IN ('Active', 'Expired')) WHERE id = ?");
+            $stmt->execute([$batch['quantity'], $batch['item_id'], $batch['item_id']]);
+
             logAudit($pdo, 'Delete', 'Batches', 'Deleted batch: ' . $batch['batch_number']);
         }
         echo '<script>window.location.href="index?page=batches&success=' . urlencode('Batch deleted successfully') . '";</script>'; exit;
